@@ -5,10 +5,10 @@ import com.acme.salary.employee.dto.EmployeeCreateRequest;
 import com.acme.salary.employee.dto.EmployeeResponse;
 import com.acme.salary.employee.dto.EmployeeUpdateRequest;
 import jakarta.validation.Valid;
+import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -41,7 +41,16 @@ public class EmployeeController {
     }
 
     @GetMapping
-    public PageResponse<EmployeeResponse> list(Pageable pageable) {
-        return employeeService.list(pageable);
+    public PageResponse<EmployeeResponse> search(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String department,
+            @RequestParam(required = false) Country country,
+            @RequestParam(required = false) JobGrade jobGrade,
+            @RequestParam(required = false) BigDecimal minSalary,
+            @RequestParam(required = false) BigDecimal maxSalary,
+            @RequestParam(required = false) Boolean active,
+            Pageable pageable) {
+        var criteria = new EmployeeSearchCriteria(search, department, country, jobGrade, minSalary, maxSalary, active);
+        return employeeService.search(criteria, pageable);
     }
 }

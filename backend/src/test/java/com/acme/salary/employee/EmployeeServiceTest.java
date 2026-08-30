@@ -171,7 +171,7 @@ class EmployeeServiceTest {
     }
 
     @Test
-    void list_batchesCurrentSalaryLookup_acrossThePage() {
+    void search_batchesCurrentSalaryLookup_andPreservesIdOrder() {
         Employee e1 = Employee.builder()
                 .id(1L)
                 .employeeCode("EMP-000001")
@@ -193,8 +193,12 @@ class EmployeeServiceTest {
                 .active(true)
                 .build();
         Pageable pageable = PageRequest.of(0, 20);
-        Page<Employee> page = new PageImpl<>(List.of(e1, e2), pageable, 2);
-        when(employeeRepository.findAll(pageable)).thenReturn(page);
+        Page<Long> idsPage = new PageImpl<>(List.of(1L, 2L), pageable, 2);
+        when(employeeRepository.searchIds(any(), any(), any(), any(), any(), any(), any(), any()))
+                .thenReturn(idsPage);
+        // findAllById intentionally returns in a different order than requested, to prove the
+        // service re-sorts by the ids list rather than trusting hydration order.
+        when(employeeRepository.findAllById(List.of(1L, 2L))).thenReturn(List.of(e2, e1));
 
         CurrentSalaryRow row1 = mock(CurrentSalaryRow.class);
         when(row1.getEmployeeId()).thenReturn(1L);
@@ -203,13 +207,16 @@ class EmployeeServiceTest {
         when(row1.getEffectiveDate()).thenReturn(LocalDate.of(2026, 3, 1));
         when(salaryRecordRepository.findCurrentSalaries(anyList())).thenReturn(List.of(row1));
 
-        PageResponse<EmployeeResponse> result = service.list(pageable);
+        EmployeeSearchCriteria criteria = new EmployeeSearchCriteria(null, null, null, null, null, null, null);
+        PageResponse<EmployeeResponse> result = service.search(criteria, pageable);
 
         assertThat(result.totalElements()).isEqualTo(2);
         assertThat(result.content()).hasSize(2);
         EmployeeResponse first = result.content().get(0);
         EmployeeResponse second = result.content().get(1);
+        assertThat(first.id()).isEqualTo(1L);
         assertThat(first.currentSalary().amount()).isEqualByComparingTo("80000.00");
+        assertThat(second.id()).isEqualTo(2L);
         assertThat(second.currentSalary()).isNull(); // no matching row for employee 2 -> null, not an error
     }
 }

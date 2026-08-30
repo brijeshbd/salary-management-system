@@ -17,6 +17,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -68,14 +69,36 @@ public class EmployeeService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<EmployeeResponse> list(Pageable pageable) {
-        Page<Employee> page = employeeRepository.findAll(pageable);
-        List<Long> ids = page.getContent().stream().map(Employee::getId).toList();
+    public PageResponse<EmployeeResponse> search(EmployeeSearchCriteria criteria, Pageable pageable) {
+        // The native query already orders by e.id; a client-supplied Sort would otherwise get
+        // naively appended by Spring Data after that ORDER BY, producing invalid SQL. Sorting
+        // combined with filters isn't supported in v1 - results are always id-ordered.
+        Pageable unsortedPage = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+        Page<Long> idsPage = employeeRepository.searchIds(
+                criteria.search(),
+                criteria.department(),
+                criteria.country() == null ? null : criteria.country().name(),
+                criteria.jobGrade() == null ? null : criteria.jobGrade().name(),
+                criteria.minSalary(),
+                criteria.maxSalary(),
+                criteria.active(),
+                unsortedPage);
+
+        List<Long> ids = idsPage.getContent();
+        Map<Long, Employee> employeesById = employeeRepository.findAllById(ids).stream()
+                .collect(Collectors.toMap(Employee::getId, Function.identity()));
         Map<Long, CurrentSalaryRow> currentSalaries = salaryRecordRepository.findCurrentSalaries(ids).stream()
                 .collect(Collectors.toMap(CurrentSalaryRow::getEmployeeId, Function.identity()));
 
-        return PageResponse.of(
-                page, employee -> mapper.toResponse(employee, mapper.toCurrentSalary(currentSalaries.get(employee.getId()))));
+        // findAllById doesn't preserve input order, so rebuild it from the (already paginated,
+        // already ordered) id list rather than trusting hydration order.
+        List<EmployeeResponse> content = ids.stream()
+                .map(employeesById::get)
+                .map(employee -> mapper.toResponse(employee, mapper.toCurrentSalary(currentSalaries.get(employee.getId()))))
+                .toList();
+
+        return new PageResponse<>(
+                content, idsPage.getNumber(), idsPage.getSize(), idsPage.getTotalElements(), idsPage.getTotalPages());
     }
 
     private CurrentSalary currentSalaryFor(Long employeeId) {

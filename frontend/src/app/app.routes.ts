@@ -12,6 +12,12 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/employees/employee-list/employee-list.component').then((m) => m.EmployeeListComponent),
   },
+  {
+    path: 'employees/:id',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/employees/employee-detail/employee-detail.component').then((m) => m.EmployeeDetailComponent),
+  },
   { path: '', pathMatch: 'full', redirectTo: 'employees' },
   { path: '**', redirectTo: 'employees' },
 ];

@@ -154,4 +154,34 @@ make, updated as the build progresses (not written retroactively at the end).
   browser tooling, UI behavior (rendering, click-through flows, console errors) is verified by
   code review and build/serve success, not by actually driving the page - the CORS bug is a
   concrete example of the kind of issue that gap can hide until a human opens it in a browser.
+- **M8 (employee list, detail/edit, salary adjustment)**: the browser-tooling gap from M7 got
+  solved properly here rather than worked around again - installed Playwright (kept out of
+  `package.json`, it's a one-off verification tool, not a committed test) and Chromium locally,
+  giving real screenshots and DOM assertions instead of curl-only guesswork. That immediately paid
+  for itself:
+  - Login → employee list rendered correctly against the real 10,000-row dataset first try
+    (paginator read "1-20 of 10000", correct per-currency formatting across USD/CAD/GBP/EUR/INR,
+    zero console errors).
+  - Clicking into the employee detail page, recording a salary adjustment, and editing the profile
+    all *appeared* to fail at first - the base-salary field kept showing "Required" even after
+    `page.fill()` set it. Root-caused through several rounds of isolation (an isolated fill worked,
+    the same fill inside the full flow didn't; direct Angular `FormControl` inspection showed the
+    value really was empty, not just visually so): it was two independent, non-app issues stacked
+    together. First, Vite's dev-server dependency pre-bundler discovered the datepicker/dialog
+    modules for the first time mid-test and force-reloaded the page, wiping in-progress form state
+    - a one-time dev-server cold-start cost that doesn't exist in a production build. Second, and
+    the more durable finding: Playwright's `page.fill()` sets the DOM value directly rather than
+    dispatching real keystrokes, and this input has a custom `appNumericOnly` directive listening
+    for `beforeinput` - the two don't compose, so Angular's own value-accessor sync ends up
+    reverting the field a few dozen milliseconds after `fill()` returns. Confirmed by switching to
+    `page.keyboard.type()` (real keystrokes), which worked immediately and was verified against
+    the live Angular `FormControl` value, not just the DOM. This is a testing-tool quirk, not an
+    app bug - a real user typing into the field is unaffected - but it's exactly the kind of false
+    negative that would have wasted time if not run down properly; recorded here so it isn't
+    rediscovered from scratch in a later milestone that touches numeric inputs.
+  Verified end-to-end via screenshots: recording an adjustment correctly appended a new (dated,
+  reasoned) salary-history row while leaving the prior row's own currency untouched (a Canadian
+  employee's history correctly shows one CAD row and one newly-added USD row - proof the
+  per-record currency model, not a single employee-level currency, is actually working), and
+  editing the profile correctly updated the header and persisted.
 - (Further milestones logged here as they land.)

@@ -53,6 +53,14 @@ The app is fundamentally CRUD plus read-mostly reports against a REST API — no
 cross-cutting client state, optimistic updates, or deep shared-state trees that would justify
 NgRx. The target job description lists RxJS as a skill, not NgRx specifically.
 
+## Reporting: never sum across currencies
+
+Grouped reports (by department, country, grade) and org-wide totals break results out per
+currency (one row per group+currency) instead of producing a single combined figure. Since FX
+conversion is explicitly out of scope, summing e.g. USD and INR salaries together would produce a
+number with no real meaning — worse than not showing a total at all. A department with employees
+in three currencies shows three rows, not one misleading blended average.
+
 ## Reporting: no caching layer
 
 10,000 employees / ~25-30k salary records aggregate in low milliseconds on indexed Postgres

@@ -77,4 +77,33 @@ make, updated as the build progresses (not written retroactively at the end).
   Verified: 6 unit tests (Mockito, no Spring context) + 4 Testcontainers integration tests all
   green; manual smoke test of the full CRUD lifecycle against the real 10,000-row dev database
   (list, create, get, update, soft-delete, 404) all behaved as expected.
+- **M5 (salary history, search/filter, CSV import/export, reporting)** - the largest milestone,
+  landed as four sub-commits:
+  - *Salary history*: straightforward append-only GET/POST, reusing the existing
+    current-salary-resolution pattern.
+  - *Search/filter*: salary-range filtering can't be a JPA Specification (current salary isn't a
+    column), so it's a native query with a `LEFT JOIN LATERAL` instead of a fragile correlated
+    max-date subquery - returns ids only, hydrated the same N+1-safe way as the M4 list endpoint.
+    Also fixed a test-isolation bug: a shared Testcontainers Postgres instance across test methods
+    in one class meant fixture data accumulated across tests; added `@Transactional` (rollback per
+    test) to fix it.
+  - *CSV import/export*: partial-success import (one bad row doesn't fail the file), reusing
+    `EmployeeService.create` per valid row rather than duplicating creation logic.
+  - *Reporting*: the one place a product-correctness issue showed up rather than a Spring Boot
+    version gotcha. Grouped reports (by department/grade) and org-wide totals deliberately never
+    sum across currencies - since FX conversion is out of scope, summing e.g. USD and INR together
+    would produce a number with no real meaning, so every aggregate is broken out per currency
+    instead (one row per group+currency).
+    Manually smoke-testing the `raises since <date>` report against the real 10,000-row dataset
+    surfaced a seeding realism bug from M3: `EmployeeSeedGenerator` always dated each employee's
+    *current* salary record within the last 0-6 months, so literally every employee looked like
+    they'd just gotten a raise - `since=2024-01-01` returned all 10,000 rows, which made the report
+    useless for demo purposes. Fixed by widening that window to 0-24 months in
+    `EmployeeSeedGenerator`; re-seeded and re-verified the report now differentiates meaningfully
+    (10,000 / 4,822 / 1,182 / 380 for cutoffs of 2024-01-01 / 2025-09-01 / 2026-06-01 / 2026-08-01
+    respectively). This is exactly the kind of thing that's easy to miss testing against a handful
+    of hand-picked fixture rows but jumps out immediately against the full seeded dataset - worth
+    noting as a reason to keep smoke-testing new features against the real 10k rows, not just unit/
+    integration test fixtures.
+  All four sub-commits: 39 tests total (unit + Testcontainers integration), full suite green.
 - (Further milestones logged here as they land.)

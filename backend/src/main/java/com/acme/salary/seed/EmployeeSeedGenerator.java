@@ -56,7 +56,10 @@ final class EmployeeSeedGenerator {
         }
 
         LocalDate[] effectiveDates = new LocalDate[recordCount];
-        effectiveDates[recordCount - 1] = today.minusMonths(random.nextInt(0, 6));
+        // Spread the *current* record's date over 2 years, not a narrow recent window - otherwise
+        // every employee looks like they got a raise "recently," which makes a raises-since-date
+        // report meaningless (it would just return everyone for any reasonable cutoff).
+        effectiveDates[recordCount - 1] = today.minusMonths(random.nextInt(0, 25));
         for (int i = recordCount - 2; i >= 0; i--) {
             effectiveDates[i] = effectiveDates[i + 1].minusMonths(random.nextInt(9, 19));
         }

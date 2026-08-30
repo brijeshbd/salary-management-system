@@ -38,6 +38,14 @@ year?", "what's our total payroll cost?").
 | SSO / enterprise auth | Basic auth is enough for a first version with a small HR user base; SSO is an infra decision for later, tied to ACME's actual identity provider. |
 | Compliance/audit certification (SOC2, GDPR tooling, etc.) | Important eventually given multi-country PII, but a certification-grade audit trail is a separate, larger effort from proving the product concept. |
 
+## Technical Constraints
+- End-to-end functional software: backend + UI, both required.
+- Relational database, seeded via script with **10,000 employee** records (real scale, not a small sample).
+- Fully deployed and reachable, with a short video demo.
+- Meaningful unit test coverage on core functionality (fast, deterministic).
+- Incremental commits showing how the solution evolved.
+
 ## Assumptions
 - 10,000 employees is a data-volume/scale target, not a concurrency target — few simultaneous HR users.
 - "Multiple countries" affects data fields (currency, country) but not payroll computation in v1.
+- Seeded data is synthetic/generated, not real ACME employee data.

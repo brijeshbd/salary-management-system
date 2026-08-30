@@ -32,4 +32,15 @@ be running.
 
 ## Seeding 10,000 employees
 
-(Added in a later milestone — will run via a `seed` Spring profile.)
+With Postgres running (see above), run the backend with the `seed` profile added:
+
+```
+cd backend
+SPRING_PROFILES_ACTIVE=dev,seed ./gradlew bootRun
+```
+
+This generates 10,000 employees with realistic department/country/grade distributions and 1-4
+salary-history records each, via batched JDBC inserts (completes in well under a second locally).
+It's idempotent — safe to re-run, it skips if the `employee` table already has rows. Stop the app
+(Ctrl+C) once you see `Seeding complete` in the logs; it keeps running as a normal web server
+afterwards.

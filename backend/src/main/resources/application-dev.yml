@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/salary_db?rewriteBatchedStatements=true
+    url: jdbc:postgresql://localhost:5432/salary_db?reWriteBatchedInserts=true
     username: salary_app
     password: salary_app
 

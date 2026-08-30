@@ -44,4 +44,15 @@ make, updated as the build progresses (not written retroactively at the end).
   the conditional-evaluation report, confirming `FlywayAutoConfiguration` wasn't activating, then
   fixing the dependency. Re-verified: migrations `V1`-`V4` apply cleanly, all planned indexes and
   unique constraints exist in Postgres, health check still green.
+- **M3 (seeding)**: also caught, while writing this milestone, that `application-dev.yml`'s JDBC
+  URL used `rewriteBatchedStatements=true` — that's the MySQL driver's batch-rewrite property, not
+  PostgreSQL's (`reWriteBatchedInserts`, capital W). Fixed before it could silently no-op batching
+  performance. Generator (`EmployeeSeedGenerator`) builds each employee's full salary history
+  backward from a target "current" salary (computed from a country/grade band) so history is
+  internally consistent, and inserts go through raw `JdbcTemplate` batches (multi-row `INSERT ...
+  RETURNING id` for employees, `batchUpdate` for salary records) rather than JPA saves in a loop.
+  Verified: 10,000 employees + 25,204 salary records seeded in 517ms; distributions checked via
+  SQL (headcount/avg-salary by country, by department, by grade; salary-history depth spread
+  1-4 per employee) — all matched the intended weights; re-running the profile correctly no-ops
+  (idempotency check).
 - (Further milestones logged here as they land.)

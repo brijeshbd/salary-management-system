@@ -1,0 +1,65 @@
+<mat-toolbar color="primary">
+  <button mat-icon-button (click)="goToEmployees()">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+  <span>Import Employees from CSV</span>
+</mat-toolbar>
+
+<div class="page">
+  <div class="card">
+    <p>
+      Upload a CSV with columns: <code>firstName, lastName, department, country, jobGrade, baseSalary,
+      currency, effectiveDate</code>. Rows with problems are skipped and reported individually - the rest
+      still import.
+    </p>
+
+    <input type="file" accept=".csv" (change)="onFileSelected($event)" #fileInput />
+
+    <div class="actions">
+      <button mat-flat-button color="primary" [disabled]="!selectedFile() || uploading()" (click)="upload()">
+        @if (uploading()) {
+          <mat-spinner diameter="20"></mat-spinner>
+        } @else {
+          Upload
+        }
+      </button>
+    </div>
+  </div>
+
+  @if (summary(); as summary) {
+    <div class="card">
+      <h3>Import Result</h3>
+      <div class="stats">
+        <div class="stat">
+          <span class="stat-value">{{ summary.totalRows }}</span>
+          <span class="stat-label">Total rows</span>
+        </div>
+        <div class="stat success">
+          <span class="stat-value">{{ summary.succeeded }}</span>
+          <span class="stat-label">Succeeded</span>
+        </div>
+        <div class="stat failure">
+          <span class="stat-value">{{ summary.failed }}</span>
+          <span class="stat-label">Failed</span>
+        </div>
+      </div>
+
+      @if (summary.errors.length > 0) {
+        <table mat-table [dataSource]="summary.errors">
+          <ng-container matColumnDef="row">
+            <th mat-header-cell *matHeaderCellDef>Row</th>
+            <td mat-cell *matCellDef="let error">{{ error.row }}</td>
+          </ng-container>
+          <ng-container matColumnDef="message">
+            <th mat-header-cell *matHeaderCellDef>Problem</th>
+            <td mat-cell *matCellDef="let error">{{ error.message }}</td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="errorColumns"></tr>
+          <tr mat-row *matRowDef="let error; columns: errorColumns"></tr>
+        </table>
+      }
+
+      <button mat-button (click)="goToEmployees()">View Employees</button>
+    </div>
+  }
+</div>

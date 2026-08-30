@@ -24,6 +24,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/employees/employee-detail/employee-detail.component').then((m) => m.EmployeeDetailComponent),
   },
+  {
+    path: 'import',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/import/csv-import/csv-import.component').then((m) => m.CsvImportComponent),
+  },
   { path: '', pathMatch: 'full', redirectTo: 'employees' },
   { path: '**', redirectTo: 'employees' },
 ];

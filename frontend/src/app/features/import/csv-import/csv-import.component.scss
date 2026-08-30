@@ -1,0 +1,53 @@
+.page {
+  padding: 16px 24px;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.card {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+
+  code {
+    background: rgba(0, 0, 0, 0.05);
+    padding: 2px 4px;
+    border-radius: 4px;
+  }
+}
+
+.actions {
+  margin-top: 16px;
+}
+
+.stats {
+  display: flex;
+  gap: 24px;
+  margin: 12px 0 20px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .stat-value {
+    font-size: 1.75rem;
+    font-weight: 600;
+  }
+
+  .stat-label {
+    color: rgba(0, 0, 0, 0.6);
+    font-size: 0.875rem;
+  }
+
+  &.success .stat-value {
+    color: #2e7d32;
+  }
+
+  &.failure .stat-value {
+    color: #b00020;
+  }
+}

@@ -184,4 +184,11 @@ make, updated as the build progresses (not written retroactively at the end).
   employee's history correctly shows one CAD row and one newly-added USD row - proof the
   per-record currency model, not a single employee-level currency, is actually working), and
   editing the profile correctly updated the header and persisted.
+  Rounding out the milestone: the add-employee form (auto-defaulting currency from the selected
+  country, only when the user hasn't already touched currency themselves) and the CSV import
+  screen both verified end-to-end with Playwright too - a 3-row test CSV with one deliberately
+  invalid country produced exactly "3 total / 2 succeeded / 1 failed" with the specific row number
+  and message surfaced in the UI, matching the backend's partial-success design from M5. All test
+  data created during verification (employees, imported rows) was deleted from the dev database
+  afterward so it doesn't pollute later screenshots or the eventual demo video.
 - (Further milestones logged here as they land.)

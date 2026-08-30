@@ -1,8 +1,13 @@
 # Salary Management System
 
 Web-based salary management software for an HR Manager, built for ACME org (10,000 employees,
-multiple countries). See [`REQUIREMENTS.md`](REQUIREMENTS.md) for goal/scope, and
-[`docs/`](docs/) for architecture, trade-offs, performance notes, and the AI-usage log.
+multiple countries). See [`REQUIREMENTS.md`](REQUIREMENTS.md) for goal/scope, and:
+
+- [`docs/architecture.md`](docs/architecture.md) — system diagram, data model, auth flow
+- [`docs/design-notes.md`](docs/design-notes.md) — codebase conventions and structure
+- [`docs/tradeoffs.md`](docs/tradeoffs.md) — decisions and the reasoning behind them
+- [`docs/performance.md`](docs/performance.md) — pagination, indexing, N+1 avoidance, seeding
+- [`docs/ai-usage-log.md`](docs/ai-usage-log.md) — how AI tools were used throughout the build
 
 **Stack:** Java 21 / Spring Boot / Spring Data JPA (Hibernate) / Gradle / PostgreSQL (backend),
 Angular / TypeScript / Angular Material (frontend).

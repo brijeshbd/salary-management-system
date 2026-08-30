@@ -106,4 +106,25 @@ make, updated as the build progresses (not written retroactively at the end).
     noting as a reason to keep smoke-testing new features against the real 10k rows, not just unit/
     integration test fixtures.
   All four sub-commits: 39 tests total (unit + Testcontainers integration), full suite green.
+- **M6 (auth)**: replaced the M4 permit-all placeholder with real Spring Security + stateless JWT.
+  One more Spring Security 7 (bundled with Boot 4) package move to work around:
+  `AuthenticationConfiguration` isn't under `org.springframework.security.authentication.configuration`
+  anymore, it moved up a level to
+  `org.springframework.security.config.annotation.authentication.configuration` - found the same
+  way as the earlier ones (unzip the candidate jar, grep for the class file).
+  Design notes: the JWT filter trusts the token's own signed claims (email + role) rather than
+  re-querying the database on every request - cheaper, and there's nothing further to look up for
+  a single-role app. Login itself does go through the full Spring Security stack
+  (`AuthenticationManager` → auto-wired `DaoAuthenticationProvider`, built automatically from the
+  single `HrUserDetailsService` + `BCryptPasswordEncoder` beans in context) rather than a hand-rolled
+  credential check, for a more faithful demonstration of the pattern the target JD asks for.
+  A real HR user is seeded unconditionally on startup (idempotent, any profile) - without it
+  nothing could ever log in.
+  Test strategy: rather than crafting a real JWT in every existing integration test class, added
+  `@WithMockUser(roles = "HR_MANAGER")` at the class level to the five pre-existing IT classes
+  (they're testing their own business logic, not auth) and wrote one dedicated `AuthControllerIT`
+  that exercises the real login → token → protected-endpoint flow end-to-end, plus wrong-password/
+  unknown-email/missing-token/garbage-token failure cases. All 44 tests green on the first run
+  after wiring this up; also manually verified the full flow (401 without a token, login, 200 with
+  the token, 401 on wrong password) against the real dev database.
 - (Further milestones logged here as they land.)

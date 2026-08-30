@@ -44,3 +44,19 @@ salary-history records each, via batched JDBC inserts (completes in well under a
 It's idempotent — safe to re-run, it skips if the `employee` table already has rows. Stop the app
 (Ctrl+C) once you see `Seeding complete` in the logs; it keeps running as a normal web server
 afterwards.
+
+## Authentication
+
+Every endpoint except `POST /api/auth/login` requires a JWT bearer token. One HR Manager account
+is seeded automatically on first boot (any profile) — dev-only default credentials:
+
+- Email: `admin@acme.com` (override with `HR_ADMIN_EMAIL`)
+- Password: `changeit` (override with `HR_ADMIN_PASSWORD` — **set this for any real deployment**)
+
+```
+TOKEN=$(curl -s -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@acme.com","password":"changeit"}' | python3 -c "import json,sys; print(json.load(sys.stdin)['token'])")
+
+curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/employees
+```

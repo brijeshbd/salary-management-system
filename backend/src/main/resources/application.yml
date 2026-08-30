@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: salary-management
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 500
+        order_inserts: true
+        order_updates: true
+  flyway:
+    enabled: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+server:
+  port: 8080
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:dev-only-secret-key-change-me-please-this-is-not-for-production-use}
+    expiration-minutes: 480
+  hr-admin:
+    email: ${HR_ADMIN_EMAIL:admin@acme.com}
+    password: ${HR_ADMIN_PASSWORD:changeit}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

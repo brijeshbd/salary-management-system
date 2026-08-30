@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/salary_db?rewriteBatchedStatements=true
+    username: salary_app
+    password: salary_app
+
+logging:
+  level:
+    com.acme.salary: DEBUG

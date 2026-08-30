@@ -55,4 +55,26 @@ make, updated as the build progresses (not written retroactively at the end).
   SQL (headcount/avg-salary by country, by department, by grade; salary-history depth spread
   1-4 per employee) — all matched the intended weights; re-running the profile correctly no-ops
   (idempotency check).
+- **M4 (Employee CRUD API + tests)**: two more Boot 4 modularization surprises, same pattern as
+  M2's Flyway one. (1) `@AutoConfigureMockMvc` isn't in `spring-boot-test-autoconfigure` anymore -
+  it moved to a new `spring-boot-starter-webmvc-test` module, package
+  `org.springframework.boot.webmvc.test.autoconfigure` (found by unzipping candidate jars and
+  grepping for the class file, since the old import path just silently doesn't exist rather than
+  erroring helpfully). (2) Boot 4 pulls in Jackson 3, which renamed its Maven group and base
+  package from `com.fasterxml.jackson.*` to `tools.jackson.*` - rather than chase that rename in
+  test code, integration tests read response JSON via `JsonPath.read(...)` (already a transitive
+  dependency via MockMvc's own `jsonPath()` matcher) instead of `ObjectMapper`, sidestepping the
+  question entirely. Also had to pin `org.testcontainers:*` versions explicitly - Boot's BOM
+  manages `spring-boot-testcontainers` (the `@ServiceConnection` glue) but not the Testcontainers
+  library itself.
+  Design notes: employee codes created via the API get an `EMP-` prefix from a dedicated sequence
+  (seeded data uses `ACME-`), so the two can never collide regardless of seed size. The list
+  endpoint resolves current salary for a whole page in one query (Postgres `DISTINCT ON`, keyed by
+  employee id) rather than one query per row, to honor the N+1-avoidance decision in
+  `tradeoffs.md`. Added a deliberately permissive `SecurityConfig` placeholder (permit-all) so the
+  API is usable before real auth exists - called out in code and here so it doesn't read as an
+  oversight; replaced with JWT-based rules in the auth milestone.
+  Verified: 6 unit tests (Mockito, no Spring context) + 4 Testcontainers integration tests all
+  green; manual smoke test of the full CRUD lifecycle against the real 10,000-row dev database
+  (list, create, get, update, soft-delete, 404) all behaved as expected.
 - (Further milestones logged here as they land.)

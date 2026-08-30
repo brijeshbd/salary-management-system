@@ -1,0 +1,74 @@
+.page {
+  padding: 16px 24px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 32px;
+}
+
+.kpi-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.kpi-tile {
+  background: white;
+  border-radius: 8px;
+  padding: 16px 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+
+  .kpi-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  .kpi-label {
+    color: rgba(0, 0, 0, 0.6);
+    font-size: 0.8rem;
+  }
+}
+
+.card {
+  background: white;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+
+  h3 {
+    margin-top: 0;
+  }
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hint {
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 0.85rem;
+}
+
+.chart-container {
+  position: relative;
+  height: 280px;
+}
+
+.currency-select {
+  width: 120px;
+}
+
+.date-field {
+  width: 160px;
+}

@@ -29,6 +29,14 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./features/import/csv-import/csv-import.component').then((m) => m.CsvImportComponent),
   },
+  {
+    path: 'reports',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/reports/reports-dashboard/reports-dashboard.component').then(
+        (m) => m.ReportsDashboardComponent,
+      ),
+  },
   { path: '', pathMatch: 'full', redirectTo: 'employees' },
   { path: '**', redirectTo: 'employees' },
 ];

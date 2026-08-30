@@ -191,4 +191,39 @@ make, updated as the build progresses (not written retroactively at the end).
   and message surfaced in the UI, matching the backend's partial-success design from M5. All test
   data created during verification (employees, imported rows) was deleted from the dev database
   afterward so it doesn't pollute later screenshots or the eventual demo video.
+- **M9 (reports dashboard)**: loaded the project's `dataviz` skill before writing any chart code,
+  per its own trigger condition. Its procedure is built around multi-series categorical palettes;
+  this dashboard's two charts (headcount by country, pay-distribution counts) are both
+  single-series bar charts where the x-axis already carries identity, so a categorical rainbow per
+  bar would be redundant noise rather than signal - the skill's own "sequential = one hue" rule
+  covers exactly this case, so both charts use one consistent, validated hue (slot 1 from the
+  skill's reference palette) rather than running the full multi-hue validator, which is scoped to
+  a problem (distinguishing many series) this dashboard doesn't have.
+  Two things worth recording:
+  1. *Bundle-size lesson, two attempts to get right.* Registering `provideCharts()` in
+     `app.config.ts` pulled chart.js into the main bundle for all 5 routes, tripping the 500KB
+     budget warning. Moving it to the `reports` route's own `providers` array didn't fix it either
+     - `app.routes.ts` is always eagerly loaded (only the lazy component import inside a route is
+     deferred), so a static top-level `import` anywhere in that file still lands in the main
+     chunk regardless of which array it's referenced from. The fix was registering the provider
+     inside `ReportsDashboardComponent`'s own `@Component` decorator instead, since that file is
+     the thing actually behind the lazy `loadComponent()` boundary. Bundle dropped from 588KB back
+     to 376KB (under budget), with chart.js correctly isolated to a 223KB chunk that only loads
+     when a user visits `/reports`.
+  2. *A real bug caught by charting, not a charting bug.* The initial "Headcount by Country" chart
+     showed two separate "CA" bars. Not an app defect - during the M8 salary-adjustment dialog
+     test, a $999,999 *USD* raise had been recorded on a Canadian (CAD) employee and never cleaned
+     up afterward (M8's cleanup only deleted employees *created* during testing, not a mutated
+     salary record on an *existing* seeded employee) - since the by-country report groups by
+     (country, currency), that one stray record was enough to split Canada into two rows. Fixed by
+     deleting the stray record and restoring the employee's name (also overwritten by that same
+     earlier test) directly in the dev database, then re-verified the chart showed exactly 7
+     country bars. Worth calling out as the general lesson, not just the specific fix: any
+     manual-verification step that mutates an *existing* seeded record (not just ones it creates)
+     needs the same disciplined cleanup, since aggregate reports will surface that pollution far
+     more visibly than a CRUD screen would.
+  Also verified the currency-switch on the pay-distribution chart re-renders with an entirely
+  different bucket scale for INR vs USD (correctly not sharing an axis - see the skill's "one
+  axis" rule) - reinforcing why per-currency reporting, not a single blended chart, is the right
+  call here.
 - (Further milestones logged here as they land.)

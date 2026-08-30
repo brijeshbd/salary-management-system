@@ -1,0 +1,5 @@
+# No datasource block here - docker-entrypoint.sh derives SPRING_DATASOURCE_URL/USERNAME/
+# PASSWORD from the platform-provided DATABASE_URL (Render, Heroku-style) before the JVM starts.
+logging:
+  level:
+    com.acme.salary: INFO

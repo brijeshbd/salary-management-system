@@ -8,6 +8,7 @@ multiple countries). See [`REQUIREMENTS.md`](REQUIREMENTS.md) for goal/scope, an
 - [`docs/tradeoffs.md`](docs/tradeoffs.md) — decisions and the reasoning behind them
 - [`docs/performance.md`](docs/performance.md) — pagination, indexing, N+1 avoidance, seeding
 - [`docs/ai-usage-log.md`](docs/ai-usage-log.md) — how AI tools were used throughout the build
+- [`docs/deployment.md`](docs/deployment.md) — deploying to Render
 
 **Stack:** Java 21 / Spring Boot / Spring Data JPA (Hibernate) / Gradle / PostgreSQL (backend),
 Angular / TypeScript / Angular Material (frontend).

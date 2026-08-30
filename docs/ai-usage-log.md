@@ -248,4 +248,43 @@ make, updated as the build progresses (not written retroactively at the end).
   employee list (10,000 rows, self-seeded automatically), and the reports dashboard all render
   with zero console errors — the same verification bar as every UI milestone before it, now
   against the artifact that will actually ship.
+- **M12 (deploy, in progress)**: Fly.io was the first choice (deploys Docker containers directly,
+  matching the existing Dockerfiles most closely) but `fly launch` failed immediately with
+  "requested machine count exceeds organization limit" - a brand-new account has a 0-machine
+  limit until a payment method is on file, even for free-tier usage. Surfaced this to the user
+  rather than working around it (there's no workaround short of adding a card), and switched to
+  Render on their choice, which needs no card for web services or its 90-day free Postgres.
+  Render's Blueprint (`render.yaml`) needed two real adjustments beyond just pointing at the
+  existing Dockerfiles, both made *before* attempting a deploy by checking Render's actual
+  documented behavior (via WebFetch) rather than guessing and iterating against a slow
+  build-and-deploy cycle:
+  1. Render provides Postgres as a single `DATABASE_URL` connection string
+     (`postgres://user:pass@host:port/db`), not separate host/user/password env vars the way
+     `docker-compose`'s `postgres` service does - and Spring's `spring.datasource.url` needs a
+     `jdbc:postgresql://` URL with credentials as separate properties. Added
+     `backend/docker-entrypoint.sh`, which parses `DATABASE_URL` (when present - local
+     `docker-compose` doesn't set it, so the existing `docker` profile's hardcoded datasource is
+     untouched) into the three Spring properties before exec-ing the JVM. Verified the parsing
+     logic in isolation against a realistic connection string before wiring it into the Dockerfile.
+  2. Render (like Fly) gives the backend and frontend separate public HTTPS URLs rather than a
+     shared private Docker network, so nginx's `proxy_pass http://backend:8080` (correct for
+     `docker-compose`) wouldn't resolve at all. Made the backend target configurable: renamed
+     `nginx.conf` to `nginx.conf.template` (official nginx image auto-envsubst's `*.template`
+     files at container start) with a `${BACKEND_URL}` placeholder, and set
+     `NGINX_ENVSUBST_FILTER=^BACKEND_URL$` in the Dockerfile - a documented but easy-to-miss
+     requirement, since unscoped `envsubst` would also blank out nginx's own `$host`/
+     `$remote_addr`/etc. (they look like shell variables too, and are unset in the container's
+     real environment). `docker-compose.yml` now passes `BACKEND_URL=http://backend:8080`
+     explicitly; `render.yaml` passes the deployed backend's public URL instead. Re-verified the
+     entire local stack end-to-end after both changes (`docker compose down -v` +
+     `docker compose up --build`, confirmed via `docker exec` that only `$BACKEND_URL` was
+     substituted in the rendered nginx config, and a full login round-trip through nginx) before
+     considering this deploy-ready - a regression here would have broken every environment, not
+     just the new one.
+  Render Blueprint deployment itself requires connecting a GitHub account and applying the
+  Blueprint from Render's dashboard - steps only the account owner can take. `docs/deployment.md`
+  documents the exact manual steps, including verifying/correcting the `CORS_ALLOWED_ORIGINS`/
+  `BACKEND_URL` env vars against Render's actually-assigned service hostnames (the render.yaml
+  values are a same-as-service-name best guess, since Render's Blueprint spec has no clean way to
+  reference one service's URL from another's env var when both are freshly created together).
 - (Further milestones logged here as they land.)

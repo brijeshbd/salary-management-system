@@ -1,0 +1,32 @@
+server {
+    listen 80;
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # ${BACKEND_URL} is substituted at container startup (nginx's official envsubst templating -
+    # see NGINX_ENVSUBST_FILTER in the Dockerfile, which scopes substitution to just this
+    # variable so nginx's own $host/$remote_addr/etc. aren't touched). Same-origin from the
+    # browser's point of view either way - a Docker Compose service name locally
+    # (http://backend:8080) or a separate deployed service's public HTTPS URL - which is what
+    # takes CORS out of the picture in both deployment shapes (see docs/tradeoffs.md).
+    location /api/ {
+        proxy_pass ${BACKEND_URL}/api/;
+        proxy_ssl_server_name on;
+        proxy_set_header Host $proxy_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /actuator/health {
+        proxy_pass ${BACKEND_URL}/actuator/health;
+        proxy_ssl_server_name on;
+        proxy_set_header Host $proxy_host;
+    }
+
+    # Angular client-side routing: any path not matching a real file falls back to index.html.
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}

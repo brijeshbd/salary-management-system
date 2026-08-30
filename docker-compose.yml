@@ -15,5 +15,34 @@ services:
       timeout: 5s
       retries: 10
 
+  backend:
+    build: ./backend
+    environment:
+      # "seed" is idempotent (skips if data already exists) - safe to leave active on every boot,
+      # including restarts, so the deployed stack is self-seeding without a separate manual step.
+      SPRING_PROFILES_ACTIVE: docker,seed
+      JWT_SECRET: ${JWT_SECRET:-dev-only-secret-key-change-me-please-this-is-not-for-production-use}
+      HR_ADMIN_EMAIL: ${HR_ADMIN_EMAIL:-admin@acme.com}
+      HR_ADMIN_PASSWORD: ${HR_ADMIN_PASSWORD:-changeit}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:8081}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "8081:80"
+
 volumes:
   postgres_data:

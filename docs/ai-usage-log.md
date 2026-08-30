@@ -226,4 +226,26 @@ make, updated as the build progresses (not written retroactively at the end).
   different bucket scale for INR vs USD (correctly not sharing an axis - see the skill's "one
   axis" rule) - reinforcing why per-currency reporting, not a single blended chart, is the right
   call here.
+- **M10 (docs)**: consolidated `architecture.md` (with Mermaid diagrams — GitHub renders these
+  natively, no separate diagramming tool needed), `design-notes.md`, and `performance.md` from
+  decisions that had mostly already been made and recorded (in commit messages, code comments, and
+  this log) throughout M1-M9, rather than designed fresh at the end. Re-read `tradeoffs.md` and
+  this log in full for consistency before writing the new docs; no corrections needed.
+- **M11 (dockerize)**: multi-stage Dockerfiles for both backend (Gradle build → JRE runtime) and
+  frontend (`npm run build` → nginx). Two adjustments made proactively rather than discovered by
+  failure: (1) used `-alpine` JRE/JDK base images specifically so `wget` (via BusyBox) is available
+  for the backend's Docker healthcheck without installing anything extra — checked this before
+  writing the healthcheck rather than after it failed. (2) `docker-compose`'s `backend` service
+  runs with `SPRING_PROFILES_ACTIVE=docker,seed` permanently, not just for an initial run — since
+  `DataSeeder` and `HrUserSeeder` are both idempotent, leaving `seed` always active makes the whole
+  stack self-seeding on any restart with no separate manual step, which is exactly what "verified
+  from a clean `docker-compose up`" should mean.
+  Verified genuinely from a clean state — `docker compose down -v` (destroying the postgres volume)
+  before `docker compose up --build`, not just a restart of already-warm containers. All three
+  services came up healthy; confirmed via curl that nginx correctly proxies both
+  `/api/auth/login` and `/actuator/health` to the backend container; confirmed via Playwright
+  against the actual served-by-nginx frontend (port 8081, not the dev server) that login, the
+  employee list (10,000 rows, self-seeded automatically), and the reports dashboard all render
+  with zero console errors — the same verification bar as every UI milestone before it, now
+  against the artifact that will actually ship.
 - (Further milestones logged here as they land.)

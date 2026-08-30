@@ -76,9 +76,10 @@ npm install
 npm start   # ng serve, http://localhost:4200
 ```
 
-The dev server proxies API calls straight to `http://localhost:8080/api` (see
-`src/environments/environment.ts`) — no separate proxy config needed locally. Sign in with the
-default HR admin credentials above.
+The dev server calls the API directly at `http://localhost:8080/api` (see
+`src/environments/environment.ts`) — a cross-origin request in local dev, which is why the backend
+has CORS configured for `http://localhost:4200`. Sign in with the default HR admin credentials
+above.
 
 ## Frontend — tests
 
@@ -86,3 +87,19 @@ default HR admin credentials above.
 cd frontend
 npm test
 ```
+
+## Full stack via Docker Compose
+
+No local Java/Node install needed — builds and runs Postgres, the backend, and the frontend
+(served by nginx, which reverse-proxies `/api` to the backend — same-origin, so CORS doesn't come
+into it here):
+
+```
+docker compose up --build
+```
+
+- App: http://localhost:8081 (sign in with the default HR admin credentials above)
+- API directly: http://localhost:8080
+- The backend self-seeds 10,000 employees on first boot (idempotent — safe on every restart)
+
+See [`docs/architecture.md`](docs/architecture.md) for the deployment topology diagram.

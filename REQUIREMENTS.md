@@ -45,6 +45,12 @@ year?", "what's our total payroll cost?").
 - Meaningful unit test coverage on core functionality (fast, deterministic).
 - Incremental commits showing how the solution evolved.
 
+## Tech Stack
+- **Backend:** Java, Spring Boot, Spring Data JPA (Hibernate), Gradle, JUnit — chosen to match the target job description (Java/Spring/Hibernate/JUnit/Gradle).
+- **Frontend:** Angular + TypeScript — matches JD (components, state management, data binding, routing, directives, pipes).
+- **Database:** PostgreSQL — relational, handles 10,000+ rows comfortably, realistic for a "fully deployed" target.
+- **Deployment target:** TBD — decided after the app is functional locally.
+
 ## Assumptions
 - 10,000 employees is a data-volume/scale target, not a concurrency target — few simultaneous HR users.
 - "Multiple countries" affects data fields (currency, country) but not payroll computation in v1.

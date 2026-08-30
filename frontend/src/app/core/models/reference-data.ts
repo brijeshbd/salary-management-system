@@ -8,6 +8,22 @@ export const CURRENCIES: Currency[] = ['USD', 'GBP', 'INR', 'EUR', 'CAD', 'AUD',
 export const JOB_GRADES: JobGrade[] = ['IC1', 'IC2', 'IC3', 'IC4', 'IC5', 'IC6', 'M1', 'M2', 'M3', 'M4'];
 export const SALARY_CHANGE_REASONS: SalaryChangeReason[] = ['RAISE', 'PROMOTION', 'ADJUSTMENT', 'CORRECTION'];
 
+/** Matches the backend seeder's department list (see backend SeedReferenceData) - department is
+ * an app-level allow-list, not a database enum, and the API doesn't expose a "list departments"
+ * endpoint, so this fixed list is duplicated here deliberately rather than built dynamically. */
+export const DEPARTMENTS: string[] = [
+  'Engineering',
+  'Sales',
+  'Customer Support',
+  'Marketing',
+  'Operations',
+  'Finance',
+  'Product',
+  'HR',
+  'Legal',
+  'Design',
+];
+
 /** One currency per country in this app (see backend docs/tradeoffs.md) - used to default the
  * currency field when a user picks a country on the add-employee form. */
 export const DEFAULT_CURRENCY_FOR_COUNTRY: Record<Country, Currency> = {

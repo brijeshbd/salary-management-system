@@ -1,0 +1,42 @@
+.spacer {
+  flex: 1 1 auto;
+}
+
+.page {
+  padding: 16px 24px;
+}
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 8px;
+
+  mat-form-field {
+    min-width: 160px;
+  }
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+}
+
+.employee-table {
+  width: 100%;
+
+  tr[mat-row] {
+    cursor: pointer;
+  }
+
+  tr[mat-row]:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+}
+
+.empty-state {
+  text-align: center;
+  color: rgba(0, 0, 0, 0.6);
+  padding: 24px;
+}

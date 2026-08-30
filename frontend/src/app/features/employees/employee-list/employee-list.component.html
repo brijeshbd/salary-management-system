@@ -1,0 +1,130 @@
+<mat-toolbar color="primary">
+  <span>Salary Management System</span>
+  <span class="spacer"></span>
+  <button mat-button routerLink="/import">
+    <mat-icon>upload_file</mat-icon>
+    Import CSV
+  </button>
+  <button mat-button (click)="exportCsv()">
+    <mat-icon>download</mat-icon>
+    Export CSV
+  </button>
+  <button mat-button routerLink="/employees/new">
+    <mat-icon>person_add</mat-icon>
+    Add Employee
+  </button>
+  <button mat-button (click)="logout()">Logout</button>
+</mat-toolbar>
+
+<div class="page">
+  <form [formGroup]="filterForm" class="filter-bar">
+    <mat-form-field appearance="outline">
+      <mat-label>Search name or code</mat-label>
+      <input matInput formControlName="search" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Department</mat-label>
+      <mat-select formControlName="department">
+        <mat-option value="">All</mat-option>
+        @for (dept of departments; track dept) {
+          <mat-option [value]="dept">{{ dept }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Country</mat-label>
+      <mat-select formControlName="country">
+        <mat-option value="">All</mat-option>
+        @for (c of countries; track c) {
+          <mat-option [value]="c">{{ c }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Grade</mat-label>
+      <mat-select formControlName="jobGrade">
+        <mat-option value="">All</mat-option>
+        @for (grade of jobGrades; track grade) {
+          <mat-option [value]="grade">{{ grade }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Min salary</mat-label>
+      <input matInput type="number" formControlName="minSalary" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Max salary</mat-label>
+      <input matInput type="number" formControlName="maxSalary" />
+    </mat-form-field>
+  </form>
+
+  @if (loading()) {
+    <div class="loading">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  }
+
+  <table mat-table [dataSource]="employees()" class="employee-table">
+    <ng-container matColumnDef="employeeCode">
+      <th mat-header-cell *matHeaderCellDef>Code</th>
+      <td mat-cell *matCellDef="let employee">{{ employee.employeeCode }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>Name</th>
+      <td mat-cell *matCellDef="let employee">{{ employee.firstName }} {{ employee.lastName }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="department">
+      <th mat-header-cell *matHeaderCellDef>Department</th>
+      <td mat-cell *matCellDef="let employee">{{ employee.department }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="country">
+      <th mat-header-cell *matHeaderCellDef>Country</th>
+      <td mat-cell *matCellDef="let employee">{{ employee.country }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="jobGrade">
+      <th mat-header-cell *matHeaderCellDef>Grade</th>
+      <td mat-cell *matCellDef="let employee">{{ employee.jobGrade }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="currentSalary">
+      <th mat-header-cell *matHeaderCellDef>Current Salary</th>
+      <td mat-cell *matCellDef="let employee">
+        {{ employee.currentSalary?.amount | currencyByCode: employee.currentSalary?.currency }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="active">
+      <th mat-header-cell *matHeaderCellDef>Status</th>
+      <td mat-cell *matCellDef="let employee">
+        <mat-chip [color]="employee.active ? 'primary' : undefined" [highlighted]="employee.active">
+          {{ employee.active ? 'Active' : 'Inactive' }}
+        </mat-chip>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let employee; columns: displayedColumns" (click)="openEmployee(employee)"></tr>
+  </table>
+
+  @if (!loading() && employees().length === 0) {
+    <p class="empty-state">No employees match these filters.</p>
+  }
+
+  <mat-paginator
+    [length]="totalElements()"
+    [pageIndex]="pageIndex()"
+    [pageSize]="pageSize()"
+    [pageSizeOptions]="[10, 20, 50, 100]"
+    (page)="onPageChange($event)"
+  ></mat-paginator>
+</div>

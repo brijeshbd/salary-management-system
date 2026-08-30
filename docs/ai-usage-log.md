@@ -127,4 +127,31 @@ make, updated as the build progresses (not written retroactively at the end).
   unknown-email/missing-token/garbage-token failure cases. All 44 tests green on the first run
   after wiring this up; also manually verified the full flow (401 without a token, login, 200 with
   the token, 401 on wrong password) against the real dev database.
+- **M7 (frontend scaffold + auth)**: `ng new` generates Angular 22 standalone (no NgModule) by
+  default now, matching the plan without needing a flag. Two build errors worth recording: (1)
+  the Angular Material schematic (`ng add @angular/material --animations=enabled`) didn't actually
+  install `@angular/animations`, which `provideAnimationsAsync()` needs at runtime - the build
+  failed with "Could not resolve '@angular/animations/browser'" until it was added explicitly
+  (it's flagged deprecated in favor of a newer native `animate.enter`/`animate.leave` API, but
+  it's still what Material's own components need today, so this is the correct dependency for
+  now). (2) a `readonly form = this.formBuilder.group(...)` field initializer running before
+  constructor-parameter properties are assigned is a TypeScript initialization-order error -
+  fixed by switching to `inject(FormBuilder)` field-style injection, which resolves before other
+  field initializers run.
+  Bigger catch from manually verifying the login flow end-to-end (curl, not a real browser -
+  browser tooling wasn't available this session): the Angular dev server (localhost:4200) calling
+  the API (localhost:8080) is a cross-origin request, and the backend had no CORS configuration at
+  all - a real browser would have silently blocked every API call with no error surfaced until
+  someone actually opened dev tools. Caught by sending an OPTIONS preflight with curl and an
+  `Origin` header and checking for `Access-Control-Allow-Origin` in the response (there wasn't
+  one); added a `CorsConfigurationSource` bean (allowed origins from an env-overridable property,
+  defaulting to `http://localhost:4200`) and confirmed the header appears on both the preflight
+  and the actual request afterward. This only matters for local dev - the deployed stack (M11)
+  serves the frontend through nginx same-origin, taking CORS out of the request path entirely -
+  but it's exactly the kind of gap that a curl-only backend test suite has no way to catch, since
+  CORS is a browser-enforced restriction, not a server-side error the API itself would ever return
+  to a non-browser client. Worth flagging as a real limitation of this session's testing: without
+  browser tooling, UI behavior (rendering, click-through flows, console errors) is verified by
+  code review and build/serve success, not by actually driving the page - the CORS bug is a
+  concrete example of the kind of issue that gap can hide until a human opens it in a browser.
 - (Further milestones logged here as they land.)

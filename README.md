@@ -5,7 +5,7 @@ multiple countries). See [`REQUIREMENTS.md`](REQUIREMENTS.md) for goal/scope, an
 [`docs/`](docs/) for architecture, trade-offs, performance notes, and the AI-usage log.
 
 **Stack:** Java 21 / Spring Boot / Spring Data JPA (Hibernate) / Gradle / PostgreSQL (backend),
-Angular / TypeScript (frontend, added in a later milestone).
+Angular / TypeScript / Angular Material (frontend).
 
 ## Backend — local setup
 
@@ -59,4 +59,25 @@ TOKEN=$(curl -s -X POST http://localhost:8080/api/auth/login \
   -d '{"email":"admin@acme.com","password":"changeit"}' | python3 -c "import json,sys; print(json.load(sys.stdin)['token'])")
 
 curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/employees
+```
+
+## Frontend — local setup
+
+With the backend running (see above):
+
+```
+cd frontend
+npm install
+npm start   # ng serve, http://localhost:4200
+```
+
+The dev server proxies API calls straight to `http://localhost:8080/api` (see
+`src/environments/environment.ts`) — no separate proxy config needed locally. Sign in with the
+default HR admin credentials above.
+
+## Frontend — tests
+
+```
+cd frontend
+npm test
 ```

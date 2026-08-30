@@ -1,0 +1,94 @@
+<mat-toolbar color="primary">
+  <button mat-icon-button (click)="cancel()">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+  <span>Add Employee</span>
+</mat-toolbar>
+
+<div class="page">
+  <form [formGroup]="form" (ngSubmit)="submit()" class="employee-form">
+    <mat-form-field appearance="outline">
+      <mat-label>First name</mat-label>
+      <input matInput formControlName="firstName" />
+      @if (form.controls.firstName.hasError('required') && form.controls.firstName.touched) {
+        <mat-error>Required</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Last name</mat-label>
+      <input matInput formControlName="lastName" />
+      @if (form.controls.lastName.hasError('required') && form.controls.lastName.touched) {
+        <mat-error>Required</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Department</mat-label>
+      <mat-select formControlName="department">
+        @for (dept of departments; track dept) {
+          <mat-option [value]="dept">{{ dept }}</mat-option>
+        }
+      </mat-select>
+      @if (form.controls.department.hasError('required') && form.controls.department.touched) {
+        <mat-error>Required</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Country</mat-label>
+      <mat-select formControlName="country" (selectionChange)="onCountryChange($event.value)">
+        @for (c of countries; track c) {
+          <mat-option [value]="c">{{ c }}</mat-option>
+        }
+      </mat-select>
+      @if (form.controls.country.hasError('required') && form.controls.country.touched) {
+        <mat-error>Required</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Job grade</mat-label>
+      <mat-select formControlName="jobGrade">
+        @for (grade of jobGrades; track grade) {
+          <mat-option [value]="grade">{{ grade }}</mat-option>
+        }
+      </mat-select>
+      @if (form.controls.jobGrade.hasError('required') && form.controls.jobGrade.touched) {
+        <mat-error>Required</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Starting salary</mat-label>
+      <input matInput appNumericOnly formControlName="baseSalary" />
+      @if (form.controls.baseSalary.hasError('required') && form.controls.baseSalary.touched) {
+        <mat-error>Required</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Currency</mat-label>
+      <mat-select formControlName="currency">
+        @for (currency of currencies; track currency) {
+          <mat-option [value]="currency">{{ currency }}</mat-option>
+        }
+      </mat-select>
+      @if (form.controls.currency.hasError('required') && form.controls.currency.touched) {
+        <mat-error>Required</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Effective date</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="effectiveDate" />
+      <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+    </mat-form-field>
+
+    <div class="form-actions">
+      <button mat-button type="button" (click)="cancel()">Cancel</button>
+      <button mat-flat-button color="primary" type="submit" [disabled]="saving()">Create Employee</button>
+    </div>
+  </form>
+</div>

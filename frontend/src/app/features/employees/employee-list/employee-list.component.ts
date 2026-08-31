@@ -1,7 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -34,7 +33,6 @@ import { CurrencyByCodePipe } from '../../../shared/pipes/currency-by-code.pipe'
     MatTableModule,
     MatPaginatorModule,
     MatProgressSpinnerModule,
-    MatChipsModule,
     CurrencyByCodePipe,
   ],
   templateUrl: './employee-list.component.html',

@@ -35,6 +35,10 @@ export class EmployeeService {
   deactivate(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }
+
+  reactivate(id: number): Observable<Employee> {
+    return this.http.post<Employee>(`${this.baseUrl}/${id}/reactivate`, {});
+  }
 }
 
 /** Skips undefined/null/empty-string values rather than sending them as literal "undefined"

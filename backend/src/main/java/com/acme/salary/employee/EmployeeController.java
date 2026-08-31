@@ -40,6 +40,11 @@ public class EmployeeController {
         employeeService.deactivate(id);
     }
 
+    @PostMapping("/{id}/reactivate")
+    public EmployeeResponse reactivate(@PathVariable Long id) {
+        return employeeService.reactivate(id);
+    }
+
     @GetMapping
     public PageResponse<EmployeeResponse> search(
             @RequestParam(required = false) String search,

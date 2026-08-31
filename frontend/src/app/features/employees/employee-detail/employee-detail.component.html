@@ -86,6 +86,11 @@
           <mat-icon>person_off</mat-icon>
           Deactivate
         </button>
+      } @else {
+        <button mat-button color="primary" (click)="reactivate()" class="deactivate-button">
+          <mat-icon>person</mat-icon>
+          Reactivate
+        </button>
       }
     </section>
 

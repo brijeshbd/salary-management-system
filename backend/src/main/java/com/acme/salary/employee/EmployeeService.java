@@ -68,6 +68,13 @@ public class EmployeeService {
         employee.setActive(false);
     }
 
+    @Transactional
+    public EmployeeResponse reactivate(Long id) {
+        Employee employee = findEmployeeOrThrow(id);
+        employee.setActive(true);
+        return mapper.toResponse(employee, currentSalaryFor(id));
+    }
+
     @Transactional(readOnly = true)
     public PageResponse<EmployeeResponse> search(EmployeeSearchCriteria criteria, Pageable pageable) {
         // The native query already orders by e.id; a client-supplied Sort would otherwise get

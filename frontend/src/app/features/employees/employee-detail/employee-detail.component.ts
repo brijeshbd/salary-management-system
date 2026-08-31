@@ -134,6 +134,10 @@ export class EmployeeDetailComponent implements OnInit {
     });
   }
 
+  reactivate(): void {
+    this.employeeService.reactivate(this.employeeId).subscribe((employee) => this.employee.set(employee));
+  }
+
   goBack(): void {
     this.router.navigate(['/employees']);
   }

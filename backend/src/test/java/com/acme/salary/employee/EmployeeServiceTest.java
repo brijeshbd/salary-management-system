@@ -171,6 +171,29 @@ class EmployeeServiceTest {
     }
 
     @Test
+    void reactivate_setsEmployeeActive() {
+        Employee employee = Employee.builder()
+                .id(10L)
+                .employeeCode("EMP-000010")
+                .firstName("A")
+                .lastName("B")
+                .department("HR")
+                .country(Country.CA)
+                .jobGrade(JobGrade.IC2)
+                .active(false)
+                .build();
+        when(employeeRepository.findById(10L)).thenReturn(Optional.of(employee));
+        when(salaryRecordRepository.findFirstByEmployeeIdAndEffectiveDateLessThanEqualOrderByEffectiveDateDesc(
+                        eq(10L), any(LocalDate.class)))
+                .thenReturn(Optional.empty());
+
+        EmployeeResponse response = service.reactivate(10L);
+
+        assertThat(employee.isActive()).isTrue();
+        assertThat(response.active()).isTrue();
+    }
+
+    @Test
     void search_batchesCurrentSalaryLookup_andPreservesIdOrder() {
         Employee e1 = Employee.builder()
                 .id(1L)

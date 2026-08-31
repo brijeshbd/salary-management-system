@@ -313,6 +313,7 @@ make, updated as the build progresses (not written retroactively at the end).
   tests via Testcontainers, which just work on GitHub-hosted runners since Docker is already
   present; frontend unit tests + production build; both Dockerfiles built to validate the
   deployable artifacts on every push, not just the one time this was checked manually locally).
-  Will verify the workflow actually runs green on GitHub (not just that the YAML is well-formed)
-  once pushed, via `gh run watch` - a workflow file is worth nothing until it's been seen to pass.
+  Verified via `gh run watch` on the real push, not just that the YAML was well-formed: all three
+  jobs passed on the first run (`docker-build` 1m30s, `backend` 1m47s including Testcontainers,
+  `frontend` 27s) - a workflow file is worth nothing until it's been seen to actually pass.
 - (Further milestones logged here as they land.)

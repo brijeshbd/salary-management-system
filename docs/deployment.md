@@ -1,5 +1,9 @@
 # Deployment (Render)
 
+**Live:** https://salary-mgmt-frontend.onrender.com — `admin@acme.com` / `changeit`. Deployed and
+verified end-to-end (login, the self-seeded 10,000-row employee list, and the reports dashboard
+all confirmed working against the actual live URL, not just locally).
+
 Render was chosen over Fly.io because Fly requires a payment method on file before it will
 allocate any machine, even within free-tier usage — a hard blocker with no way to work around it
 short of adding a card. Render's free tier needs no card for web services or its 90-day free
@@ -45,9 +49,22 @@ curl -X POST https://<frontend-url>/api/auth/login \
 `HR_ADMIN_PASSWORD` is set to the same `changeit` value as local dev directly in `render.yaml` —
 this is synthetic demo data behind a login, not a real secret, so a fixed documented value beats
 the friction of retrieving a Render-generated one from the dashboard every time someone wants to
-demo the app. If you deployed before this was fixed (Render had generated a random value), update
-`HR_ADMIN_PASSWORD` to `changeit` in the backend service's **Environment** tab and save — Render
-redeploys automatically on an env var change.
+demo the app.
+
+**If you deployed before this was fixed** (Render had generated a random value): `HrUserSeeder` is
+idempotent — it skips seeding entirely if an HR user row already exists — so simply changing
+`HR_ADMIN_PASSWORD` and redeploying does **not** update an already-provisioned database's stored
+password. Either connect to the database directly (Render dashboard → the database → **Connect** →
+"External Database URL") and update the row yourself:
+
+```sql
+-- password_hash must be a bcrypt hash of the new password, e.g. generated via Spring Security's
+-- BCryptPasswordEncoder - a plaintext value here will never match on login.
+UPDATE hr_user SET password_hash = '<bcrypt-hash-of-new-password>' WHERE email = 'admin@acme.com';
+```
+
+or simpler: `DELETE FROM hr_user;` and trigger a manual redeploy — `HrUserSeeder` will then reseed
+with whatever `HR_ADMIN_PASSWORD` is currently set to.
 
 ## Known limitations of this deployment
 

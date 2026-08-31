@@ -326,4 +326,23 @@ make, updated as the build progresses (not written retroactively at the end).
   publicly in `README.md` for local dev. This app has no real secret behind that login (synthetic
   seed data, no real PII), so a Render-generated mystery value was solving a problem that didn't
   need solving and just added friction for anyone who needs to demo the app later.
+  That fix alone didn't unblock login, though: `HrUserSeeder` is deliberately idempotent (skips if
+  an HR user row already exists), so the already-deployed database still had the *original*
+  Render-generated password hash regardless of what `render.yaml` now said - correct behavior for
+  the seeder's actual job, but an operational gap for changing a credential after first deploy.
+  Diagnosed by testing login and getting a clean 401 (not a timeout/500), which pointed at "wrong
+  password in the DB" rather than "app misconfigured." Fixed directly: connected to Render's
+  Postgres via its external connection string (`docker run --rm postgres:16-alpine psql "$URL"` -
+  no local psql client needed), generated a real bcrypt hash for `changeit` using the project's
+  own `spring-security-crypto` jar via `jshell` (guarantees the exact same hashing the app itself
+  uses, rather than an ad-hoc script that might not match `BCryptPasswordEncoder`'s defaults), and
+  updated the stored row directly. Documented the general fix (`docs/deployment.md`) for anyone
+  who hits the same idempotent-seeder-vs-changed-credential gap later.
+  Final verification against the actual live URL (not a proxy for "should work"): login succeeds,
+  an authenticated request confirms all 10,000 self-seeded employees are present via both the
+  direct backend URL and the frontend's nginx-proxied path, and a Playwright pass against the real
+  `https://salary-mgmt-frontend.onrender.com` shows the employee list and reports dashboard
+  (including the currency-charts) rendering correctly with zero console errors - the same
+  screenshot-based verification bar used for every UI milestone since M8, now against the artifact
+  a reviewer will actually open.
 - (Further milestones logged here as they land.)

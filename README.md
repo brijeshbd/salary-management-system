@@ -3,7 +3,13 @@
 [![CI](https://github.com/brijeshbd/salary-management-system/actions/workflows/ci.yml/badge.svg)](https://github.com/brijeshbd/salary-management-system/actions/workflows/ci.yml)
 
 Web-based salary management software for an HR Manager, built for ACME org (10,000 employees,
-multiple countries). See [`REQUIREMENTS.md`](REQUIREMENTS.md) for goal/scope, and:
+multiple countries).
+
+**Live demo:** https://salary-mgmt-frontend.onrender.com — sign in with `admin@acme.com` /
+`changeit`. Free-tier hosting: the first request after ~15 minutes of inactivity takes 30-60s to
+cold-start, and the database is on a 90-day free plan (see [`docs/deployment.md`](docs/deployment.md)).
+
+See [`REQUIREMENTS.md`](REQUIREMENTS.md) for goal/scope, and:
 
 - [`docs/architecture.md`](docs/architecture.md) — system diagram, data model, auth flow
 - [`docs/design-notes.md`](docs/design-notes.md) — codebase conventions and structure

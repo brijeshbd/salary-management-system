@@ -21,7 +21,38 @@ See [`REQUIREMENTS.md`](REQUIREMENTS.md) for goal/scope, and:
 **Stack:** Java 21 / Spring Boot / Spring Data JPA (Hibernate) / Gradle / PostgreSQL (backend),
 Angular / TypeScript / Angular Material (frontend).
 
-## Backend — local setup
+## Prerequisites
+
+| Path below | You need |
+|---|---|
+| Quick start (Docker Compose) | [Docker](https://docs.docker.com/get-docker/) only |
+| Local backend dev | Java 21 (Docker too, for Postgres + Testcontainers-based tests) |
+| Local frontend dev | Node.js 22+ and npm |
+
+The Gradle wrapper (`./gradlew`) and Angular CLI (via `npx`) are included — no separate Gradle or
+Angular CLI install needed.
+
+## Quick start (any machine, nothing but Docker)
+
+```
+git clone https://github.com/brijeshbd/salary-management-system.git
+cd salary-management-system
+docker compose up --build
+```
+
+- App: http://localhost:8081 — sign in with `admin@acme.com` / `changeit`
+- API directly: http://localhost:8080
+- The backend self-seeds 10,000 employees on first boot (idempotent — safe on every restart)
+
+First run downloads base images and builds both apps from source, so expect a few minutes.
+See [`docs/architecture.md`](docs/architecture.md) for the deployment topology diagram.
+
+## Local development setup
+
+Use this instead of the quick start if you're actively changing code — it gives you hot-reload
+(`ng serve`, `./gradlew bootRun`) rather than rebuilding a Docker image on every change.
+
+### Backend
 
 1. Start Postgres:
    ```
@@ -34,7 +65,7 @@ Angular / TypeScript / Angular Material (frontend).
    ```
 3. Health check: `curl http://localhost:8080/actuator/health` → `{"status":"UP"}`
 
-## Backend — tests
+### Backend — tests
 
 ```
 cd backend
@@ -44,7 +75,7 @@ cd backend
 Integration tests use Testcontainers (real PostgreSQL in a disposable container) — Docker must
 be running.
 
-## Seeding 10,000 employees
+### Seeding 10,000 employees
 
 With Postgres running (see above), run the backend with the `seed` profile added:
 
@@ -59,7 +90,7 @@ It's idempotent — safe to re-run, it skips if the `employee` table already has
 (Ctrl+C) once you see `Seeding complete` in the logs; it keeps running as a normal web server
 afterwards.
 
-## Authentication
+### Authentication
 
 Every endpoint except `POST /api/auth/login` requires a JWT bearer token. One HR Manager account
 is seeded automatically on first boot (any profile) — dev-only default credentials:
@@ -75,7 +106,7 @@ TOKEN=$(curl -s -X POST http://localhost:8080/api/auth/login \
 curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/employees
 ```
 
-## Frontend — local setup
+### Frontend
 
 With the backend running (see above):
 
@@ -90,25 +121,9 @@ The dev server calls the API directly at `http://localhost:8080/api` (see
 has CORS configured for `http://localhost:4200`. Sign in with the default HR admin credentials
 above.
 
-## Frontend — tests
+### Frontend — tests
 
 ```
 cd frontend
 npm test
 ```
-
-## Full stack via Docker Compose
-
-No local Java/Node install needed — builds and runs Postgres, the backend, and the frontend
-(served by nginx, which reverse-proxies `/api` to the backend — same-origin, so CORS doesn't come
-into it here):
-
-```
-docker compose up --build
-```
-
-- App: http://localhost:8081 (sign in with the default HR admin credentials above)
-- API directly: http://localhost:8080
-- The backend self-seeds 10,000 employees on first boot (idempotent — safe on every restart)
-
-See [`docs/architecture.md`](docs/architecture.md) for the deployment topology diagram.

@@ -287,4 +287,26 @@ make, updated as the build progresses (not written retroactively at the end).
   `BACKEND_URL` env vars against Render's actually-assigned service hostnames (the render.yaml
   values are a same-as-service-name best guess, since Render's Blueprint spec has no clean way to
   reference one service's URL from another's env var when both are freshly created together).
+- **JD gap check (post-M12, pre-deploy)**: the user asked whether Redis could be added anywhere -
+  answered directly that it shouldn't be, since it would contradict two already-documented
+  decisions (no report caching, stateless JWT specifically to avoid needing shared session state)
+  for no problem the app actually has. That prompted a broader "did we miss anything from the JD"
+  check, which surfaced two real gaps against explicit "must-have" lines: no CI/CD pipeline, and
+  no demonstrated multithreading (only `ThreadLocalRandom` in the seeder, which is a thread-safe
+  RNG, not multithreading itself). On "make sure the app is multithreading-friendly," rather than
+  assume either way, ran a dedicated audit sub-agent across every Spring-managed bean checking for
+  mutable-after-construction fields, unsynchronized shared collections, or other race conditions
+  under Tomcat's default multi-threaded request handling. Result: clean - every bean already
+  follows `private final`-fields-via-constructor-injection, so nothing needed fixing there. The
+  audit's one actionable finding was specifically about the *planned* change, not an existing bug:
+  `EmployeeSeedGenerator`'s `Faker` field isn't documented as thread-safe for concurrent use, which
+  would matter the moment seed generation was parallelized. Implemented `DataSeeder`'s
+  `ExecutorService`/`CompletableFuture`-based parallel chunk generation with that fix already
+  applied (one `EmployeeSeedGenerator` per task, never shared across threads) rather than
+  discovering the race after the fact. Verified against a real re-seed: full test suite still
+  green, identical deterministic `ACME-000001..010000` numbering (no gaps, no duplicates - computed
+  per-chunk from arithmetic rather than a shared mutable counter), zero corrupted names, consistent
+  ~550ms total time (expected - this was a demonstration of correct concurrency, not a performance
+  fix, since generation was never the bottleneck; documented honestly as such in
+  `docs/tradeoffs.md` rather than overclaiming a speedup that didn't materialize).
 - (Further milestones logged here as they land.)

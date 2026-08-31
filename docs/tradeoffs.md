@@ -66,4 +66,32 @@ in three currencies shows three rows, not one misleading blended average.
 10,000 employees / ~25-30k salary records aggregate in low milliseconds on indexed Postgres
 columns. A cache would need invalidation on every salary write to stay correct, adding
 complexity to solve a performance problem that doesn't exist at this scale. Revisit if the
-dataset grows by orders of magnitude or real latency issues show up in monitoring.
+dataset grows by orders of magnitude or real latency issues show up in monitoring. The same
+reasoning applies to introducing Redis anywhere else in the app (e.g. as a session/rate-limit
+store) — nothing here needs shared state across instances at this scale, and stateless JWT auth
+was chosen specifically to avoid needing one (see above).
+
+## Concurrency: audited for thread-safety, one deliberate multithreading demonstration
+
+Every `@Service`/`@Component`/`@RestController`/`@Configuration`/filter class was audited for
+thread-safety under Spring's default model (singleton beans, each HTTP request on its own thread
+from Tomcat's pool). Result: no violations — every bean holds only `private final` fields set once
+via constructor injection or `@Value` at startup, with all per-request mutable state (query
+params, DTOs, working collections) kept local to method bodies. This is a property of following
+standard idiomatic Spring conventions throughout, not something bolted on afterward.
+
+Beyond that baseline, the codebase didn't otherwise call for explicit multithreading — there's no
+CPU-bound work in the request path, and the 10,000-employee seed script was already well under a
+second running single-threaded (see `docs/performance.md`). `DataSeeder` now parallelizes its
+CPU-bound part (generating each chunk's synthetic employee data) across a fixed thread pool via
+`ExecutorService`/`CompletableFuture`, while keeping the DB writes sequential per chunk (batch
+inserts are I/O-bound and already fast; parallelizing them would just add connection contention).
+This is a deliberate demonstration, not a performance necessity, and it surfaced a real bug before
+it shipped: `EmployeeSeedGenerator` wraps a `Faker` instance, and DataFaker's `Faker` isn't
+documented as safe for concurrent use from multiple threads. Sharing one `Faker` across the thread
+pool (as the original single-threaded code did, harmlessly, since only one thread ever touched it)
+would have risked corrupted names under real concurrent access. Fixed by giving each parallel task
+its own `EmployeeSeedGenerator`/`Faker` instance rather than sharing one — verified afterward with
+no shared mutable state across threads, identical deterministic `ACME-000001..010000` employee-code
+numbering (computed per-chunk from arithmetic, not a shared counter), and zero corrupted names
+across a full 10,000-row re-seed.

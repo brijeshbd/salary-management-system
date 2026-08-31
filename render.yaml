@@ -25,8 +25,11 @@ services:
         generateValue: true
       - key: HR_ADMIN_EMAIL
         value: admin@acme.com
+      # Same value as the documented local-dev default (README.md) rather than Render-generated -
+      # this is synthetic demo data behind a login, not a real secret worth the friction of
+      # retrieving a generated value from the dashboard every time someone needs to demo the app.
       - key: HR_ADMIN_PASSWORD
-        generateValue: true
+        value: changeit
       # Best-guess based on the frontend service name below. If Render assigns a different
       # hostname (e.g. due to a name collision), update this in the Render dashboard after first
       # deploy - see docs/deployment.md.

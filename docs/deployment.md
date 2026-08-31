@@ -39,13 +39,15 @@ service name isn't already taken by another Render user. Once both services are 
 curl https://<frontend-url>/actuator/health   # proxied to the backend, should return {"status":"UP"}
 curl -X POST https://<frontend-url>/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@acme.com","password":"<see below>"}'
+  -d '{"email":"admin@acme.com","password":"changeit"}'
 ```
 
-`HR_ADMIN_PASSWORD` is set via `generateValue: true` in `render.yaml` — Render generates a random
-value rather than using the `changeit` local-dev default. Find it in the backend service's
-**Environment** tab in the Render dashboard before logging in for the first time (or set it to a
-value of your choosing there before the first deploy).
+`HR_ADMIN_PASSWORD` is set to the same `changeit` value as local dev directly in `render.yaml` —
+this is synthetic demo data behind a login, not a real secret, so a fixed documented value beats
+the friction of retrieving a Render-generated one from the dashboard every time someone wants to
+demo the app. If you deployed before this was fixed (Render had generated a random value), update
+`HR_ADMIN_PASSWORD` to `changeit` in the backend service's **Environment** tab and save — Render
+redeploys automatically on an env var change.
 
 ## Known limitations of this deployment
 

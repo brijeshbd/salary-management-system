@@ -316,4 +316,14 @@ make, updated as the build progresses (not written retroactively at the end).
   Verified via `gh run watch` on the real push, not just that the YAML was well-formed: all three
   jobs passed on the first run (`docker-build` 1m30s, `backend` 1m47s including Testcontainers,
   `frontend` 27s) - a workflow file is worth nothing until it's been seen to actually pass.
+- **M12 (deploy, verified)**: user deployed the Render Blueprint. Both guessed cross-service URLs
+  (`salary-mgmt-backend`/`salary-mgmt-frontend.onrender.com`) turned out correct on the first try -
+  confirmed directly rather than assumed, via curl against both the backend's own health endpoint
+  and the frontend's nginx-proxied one, both returning `{"status":"UP"}`. One real friction point:
+  `HR_ADMIN_PASSWORD` used `generateValue: true`, and the user couldn't locate the generated value
+  in Render's dashboard. Rather than iterate on dashboard-navigation instructions, fixed the
+  actual cause - switched to a fixed `value: changeit`, the same credential already documented
+  publicly in `README.md` for local dev. This app has no real secret behind that login (synthetic
+  seed data, no real PII), so a Render-generated mystery value was solving a problem that didn't
+  need solving and just added friction for anyone who needs to demo the app later.
 - (Further milestones logged here as they land.)

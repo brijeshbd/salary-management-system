@@ -2,7 +2,10 @@
 
 This project was built with Claude Code (Anthropic's agentic CLI) as the primary development
 tool. This log records how it was used and the reasoning behind key decisions it made or helped
-make, updated as the build progresses (not written retroactively at the end).
+make, updated as the build progresses (not written retroactively at the end). For the actual
+prompt/instruction text at the points that shaped the project most - both the user's steering
+prompts and Claude Code's own delegation prompts to sub-agents - see
+[`ai-prompts.md`](ai-prompts.md).
 
 ## Requirements & scoping
 

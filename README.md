@@ -16,6 +16,7 @@ See [`REQUIREMENTS.md`](REQUIREMENTS.md) for goal/scope, and:
 - [`docs/tradeoffs.md`](docs/tradeoffs.md) — decisions and the reasoning behind them
 - [`docs/performance.md`](docs/performance.md) — pagination, indexing, N+1 avoidance, seeding
 - [`docs/ai-usage-log.md`](docs/ai-usage-log.md) — how AI tools were used throughout the build
+- [`docs/ai-prompts.md`](docs/ai-prompts.md) — representative prompts/instructions used with AI tools
 - [`docs/deployment.md`](docs/deployment.md) — deploying to Render
 
 **Stack:** Java 21 / Spring Boot / Spring Data JPA (Hibernate) / Gradle / PostgreSQL (backend),

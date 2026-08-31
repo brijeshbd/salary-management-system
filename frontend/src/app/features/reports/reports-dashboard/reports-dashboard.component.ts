@@ -1,13 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
+import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { Router } from '@angular/router';
 import { ChartConfiguration } from 'chart.js';
@@ -21,8 +23,9 @@ import { toIsoDate } from '../../../shared/utils/date.util';
 
 /** Single hue for magnitude-only bar charts (headcount, pay-distribution counts) - position/
  * labels already carry identity, so a categorical rainbow per bar would be noise, not signal.
- * From the dataviz skill's validated default palette, categorical slot 1 (light mode). */
-const CHART_COLOR = '#2a78d6';
+ * Brand teal (cyan-palette tone 60) - the darker tones on this hue fail the dataviz skill's
+ * chroma-floor check (read as gray), so this is the darkest brand-teal tone that still passes. */
+const CHART_COLOR = '#00a1a1';
 
 @Component({
   selector: 'app-reports-dashboard',
@@ -38,6 +41,8 @@ const CHART_COLOR = '#2a78d6';
     MatDatepickerModule,
     MatTableModule,
     MatProgressSpinnerModule,
+    MatTabsModule,
+    MatPaginatorModule,
     CurrencyByCodePipe,
     BaseChartDirective,
   ],
@@ -81,6 +86,16 @@ export class ReportsDashboardComponent implements OnInit {
   readonly raisesLoading = signal(false);
   readonly raiseColumns = ['employeeCode', 'name', 'department', 'newSalary', 'effectiveDate', 'reason'];
 
+  // Client-side pagination - the raises list can run into the thousands for a wide date
+  // range and the backend endpoint returns the full set (no server-side paging), so we cap
+  // what's rendered per page instead of dumping every row into one long scroll.
+  readonly raisesPageIndex = signal(0);
+  readonly raisesPageSize = signal(10);
+  readonly pagedRaises = computed(() => {
+    const start = this.raisesPageIndex() * this.raisesPageSize();
+    return this.raises().slice(start, start + this.raisesPageSize());
+  });
+
   ngOnInit(): void {
     this.loadOverview();
     this.loadPayDistribution();
@@ -96,6 +111,11 @@ export class ReportsDashboardComponent implements OnInit {
     if (!date) return;
     this.raisesSince.set(date);
     this.loadRaises();
+  }
+
+  onRaisesPageChange(event: PageEvent): void {
+    this.raisesPageIndex.set(event.pageIndex);
+    this.raisesPageSize.set(event.pageSize);
   }
 
   goToEmployees(): void {
@@ -139,6 +159,7 @@ export class ReportsDashboardComponent implements OnInit {
     this.raisesLoading.set(true);
     this.reportingService.raisesSince(toIsoDate(this.raisesSince())).subscribe((raises) => {
       this.raises.set(raises);
+      this.raisesPageIndex.set(0);
       this.raisesLoading.set(false);
     });
   }

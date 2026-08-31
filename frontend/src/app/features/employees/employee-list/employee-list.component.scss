@@ -1,7 +1,7 @@
 :host {
   display: block;
   min-height: 100vh;
-  background: #f5f7fa;
+  background: #f6fffb;
 }
 
 .app-toolbar {
@@ -78,6 +78,11 @@
   }
 }
 
+.search-field {
+  min-width: 240px;
+  flex: 1 1 240px;
+}
+
 .field-icon {
   color: rgba(0, 0, 0, 0.4);
   margin-right: 4px;
@@ -116,7 +121,7 @@
   }
 
   tr[mat-row]:hover {
-    background-color: #f0f5fc;
+    background-color: rgba(1, 77, 67, 0.05);
   }
 }
 

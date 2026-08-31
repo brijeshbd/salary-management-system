@@ -33,9 +33,9 @@
 
   <div class="card filter-card">
     <form [formGroup]="filterForm" class="filter-bar">
-      <mat-form-field appearance="outline">
-        <mat-label>Search name or code</mat-label>
-        <input matInput formControlName="search" />
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Search</mat-label>
+        <input matInput formControlName="search" placeholder="Name or employee code" />
         <mat-icon matPrefix class="field-icon">search</mat-icon>
       </mat-form-field>
 

@@ -4,17 +4,30 @@
 // Learn more about theming and how to use it for your application's
 // custom components at https://material.angular.dev/guide/theming
 @use '@angular/material' as mat;
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=Inclusive+Sans:wght@400;500;700&display=swap');
 
+// Brand palette sourced from incubyte.co: deep teal primary (#014D43), lime-chartreuse
+// accent (#D3FE73). `mat.$cyan-palette` is the closest built-in M3 hue family to the brand
+// teal, so it supplies well-formed supporting tones (containers, outlines, etc.); the
+// `primary`/`on-primary` overrides below pin the exact brand hex for the tone that's
+// actually visible (toolbars, buttons, links).
 html {
   height: 100%;
   @include mat.theme(
     (
       color: (
-        primary: mat.$azure-palette,
-        tertiary: mat.$blue-palette,
+        primary: mat.$cyan-palette,
+        tertiary: mat.$chartreuse-palette,
       ),
-      typography: Roboto,
+      typography: (
+        plain-family: 'Inclusive Sans, sans-serif',
+        brand-family: 'Fraunces, serif',
+      ),
       density: 0,
+    ),
+    (
+      primary: #014d43,
+      on-primary: #ffffff,
     )
   );
 }
@@ -35,5 +48,15 @@ body {
   // Reset the user agent margin.
   margin: 0;
   height: 100%;
+}
+
+// Plain (non-Material) headings don't pick up the theme's `brand-family` token, so set the
+// brand serif explicitly - this is what gives section titles the same editorial feel as
+// incubyte.co's headings, while table/body text stays on the plain sans for legibility.
+h1,
+h2,
+h3,
+h4 {
+  font-family: 'Fraunces', serif;
 }
 /* You can add global styles to this file, and also import other style files */

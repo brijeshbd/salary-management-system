@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('backend/**/*.gradle*', 'backend/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: gradle-
+
+      # Testcontainers needs Docker - already present on GitHub-hosted ubuntu runners.
+      - name: Run backend tests
+        working-directory: backend
+        run: ./gradlew test --no-daemon
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-results
+          path: backend/build/reports/tests/test
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run frontend tests
+        working-directory: frontend
+        run: npm test -- --watch=false
+
+      - name: Production build
+        working-directory: frontend
+        run: npm run build -- --configuration production
+
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Validates the deployable artifacts (docs/deployment.md, docker-compose.yml) build cleanly
+      # on every push - not just the one time this was verified manually.
+      - name: Build backend image
+        run: docker build -t salary-backend:ci ./backend
+
+      - name: Build frontend image
+        run: docker build -t salary-frontend:ci ./frontend

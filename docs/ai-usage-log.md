@@ -309,4 +309,10 @@ make, updated as the build progresses (not written retroactively at the end).
   ~550ms total time (expected - this was a demonstration of correct concurrency, not a performance
   fix, since generation was never the bottleneck; documented honestly as such in
   `docs/tradeoffs.md` rather than overclaiming a speedup that didn't materialize).
+- **CI/CD (closing the last JD gap)**: added `.github/workflows/ci.yml` - three jobs (backend
+  tests via Testcontainers, which just work on GitHub-hosted runners since Docker is already
+  present; frontend unit tests + production build; both Dockerfiles built to validate the
+  deployable artifacts on every push, not just the one time this was checked manually locally).
+  Will verify the workflow actually runs green on GitHub (not just that the YAML is well-formed)
+  once pushed, via `gh run watch` - a workflow file is worth nothing until it's been seen to pass.
 - (Further milestones logged here as they land.)

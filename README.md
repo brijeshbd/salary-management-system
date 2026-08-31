@@ -1,5 +1,7 @@
 # Salary Management System
 
+[![CI](https://github.com/brijeshbd/salary-management-system/actions/workflows/ci.yml/badge.svg)](https://github.com/brijeshbd/salary-management-system/actions/workflows/ci.yml)
+
 Web-based salary management software for an HR Manager, built for ACME org (10,000 employees,
 multiple countries). See [`REQUIREMENTS.md`](REQUIREMENTS.md) for goal/scope, and:
 

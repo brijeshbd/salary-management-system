@@ -28,7 +28,13 @@
           </div>
 
           <div class="card">
-            <h3>Headcount by Country</h3>
+            <div class="card-header">
+              <h3>Headcount by Country</h3>
+              <button mat-button (click)="exportHeadcountByCountry()">
+                <mat-icon>download</mat-icon>
+                Export CSV
+              </button>
+            </div>
             <div class="chart-container">
               <canvas baseChart [data]="countryHeadcountChart()" [options]="chartOptions" type="bar"></canvas>
             </div>
@@ -41,14 +47,20 @@
           <div class="card">
             <div class="card-header">
               <h3>Pay Distribution</h3>
-              <mat-form-field appearance="outline" class="currency-select">
-                <mat-label>Currency</mat-label>
-                <mat-select [value]="selectedCurrency()" (selectionChange)="onCurrencyChange($event.value)">
-                  @for (currency of currencies; track currency) {
-                    <mat-option [value]="currency">{{ currency }}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
+              <div class="card-header-actions">
+                <mat-form-field appearance="outline" class="currency-select">
+                  <mat-label>Currency</mat-label>
+                  <mat-select [value]="selectedCurrency()" (selectionChange)="onCurrencyChange($event.value)">
+                    @for (currency of currencies; track currency) {
+                      <mat-option [value]="currency">{{ currency }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                <button mat-button (click)="exportPayDistribution()">
+                  <mat-icon>download</mat-icon>
+                  Export CSV
+                </button>
+              </div>
             </div>
             @if (distributionLoading()) {
               <div class="loading">
@@ -66,7 +78,13 @@
       <mat-tab label="By Department">
         <div class="tab-body">
           <div class="card">
-            <h3>Average Pay by Department</h3>
+            <div class="card-header">
+              <h3>Average Pay by Department</h3>
+              <button mat-button (click)="exportByDepartment()">
+                <mat-icon>download</mat-icon>
+                Export CSV
+              </button>
+            </div>
             <p class="hint">Grouped by currency - never summed across currencies (see docs/tradeoffs.md).</p>
             <table mat-table [dataSource]="byDepartment()">
               <ng-container matColumnDef="group">
@@ -103,7 +121,13 @@
       <mat-tab label="By Grade">
         <div class="tab-body">
           <div class="card">
-            <h3>Average Pay by Grade</h3>
+            <div class="card-header">
+              <h3>Average Pay by Grade</h3>
+              <button mat-button (click)="exportByGrade()">
+                <mat-icon>download</mat-icon>
+                Export CSV
+              </button>
+            </div>
             <table mat-table [dataSource]="byGrade()">
               <ng-container matColumnDef="group">
                 <th mat-header-cell *matHeaderCellDef>Grade</th>
@@ -141,17 +165,23 @@
           <div class="card">
             <div class="card-header">
               <h3>Recent Raises</h3>
-              <mat-form-field appearance="outline" class="date-field">
-                <mat-label>Since</mat-label>
-                <input
-                  matInput
-                  [matDatepicker]="picker"
-                  [ngModel]="raisesSince()"
-                  (ngModelChange)="onRaisesSinceChange($event)"
-                />
-                <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-                <mat-datepicker #picker></mat-datepicker>
-              </mat-form-field>
+              <div class="card-header-actions">
+                <mat-form-field appearance="outline" class="date-field">
+                  <mat-label>Since</mat-label>
+                  <input
+                    matInput
+                    [matDatepicker]="picker"
+                    [ngModel]="raisesSince()"
+                    (ngModelChange)="onRaisesSinceChange($event)"
+                  />
+                  <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                  <mat-datepicker #picker></mat-datepicker>
+                </mat-form-field>
+                <button mat-button (click)="exportRaises()">
+                  <mat-icon>download</mat-icon>
+                  Export CSV
+                </button>
+              </div>
             </div>
 
             @if (raisesLoading()) {

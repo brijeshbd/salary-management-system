@@ -69,6 +69,12 @@
   align-items: center;
 }
 
+.card-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .hint {
   color: rgba(0, 0, 0, 0.6);
   font-size: 0.85rem;

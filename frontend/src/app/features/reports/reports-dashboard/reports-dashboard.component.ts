@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -20,6 +21,7 @@ import { CurrencyTotal, GroupSalarySummary, PayDistributionBucket, RecentRaise }
 import { CURRENCIES, Currency } from '../../../core/models/reference-data';
 import { CurrencyByCodePipe } from '../../../shared/pipes/currency-by-code.pipe';
 import { toIsoDate } from '../../../shared/utils/date.util';
+import { downloadBlob } from '../../../shared/utils/download.util';
 
 /** Single hue for magnitude-only bar charts (headcount, pay-distribution counts) - position/
  * labels already carry identity, so a categorical rainbow per bar would be noise, not signal.
@@ -37,6 +39,7 @@ const CHART_COLOR = '#00a1a1';
     MatButtonModule,
     MatSelectModule,
     MatFormFieldModule,
+    MatIconModule,
     MatInputModule,
     MatDatepickerModule,
     MatTableModule,
@@ -120,6 +123,28 @@ export class ReportsDashboardComponent implements OnInit {
 
   goToEmployees(): void {
     this.router.navigate(['/employees']);
+  }
+
+  exportHeadcountByCountry(): void {
+    this.reportingService.exportSummaryByCountry().subscribe((blob) => downloadBlob(blob, 'headcount-by-country.csv'));
+  }
+
+  exportPayDistribution(): void {
+    const currency = this.selectedCurrency();
+    this.reportingService.exportPayDistribution(currency).subscribe((blob) => downloadBlob(blob, `pay-distribution-${currency}.csv`));
+  }
+
+  exportByDepartment(): void {
+    this.reportingService.exportSummaryByDepartment().subscribe((blob) => downloadBlob(blob, 'pay-by-department.csv'));
+  }
+
+  exportByGrade(): void {
+    this.reportingService.exportSummaryByGrade().subscribe((blob) => downloadBlob(blob, 'pay-by-grade.csv'));
+  }
+
+  exportRaises(): void {
+    const since = toIsoDate(this.raisesSince());
+    this.reportingService.exportRaises(since).subscribe((blob) => downloadBlob(blob, `raises-since-${since}.csv`));
   }
 
   private loadOverview(): void {

@@ -1,5 +1,7 @@
 package com.acme.salary.reporting;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -149,5 +151,47 @@ class ReportingControllerIT {
                 .andExpect(jsonPath("$[0].lastName").value("Two"))
                 .andExpect(jsonPath("$[0].newSalary").value(210000.00))
                 .andExpect(jsonPath("$[0].reason").value("RAISE"));
+    }
+
+    @Test
+    void exportSummaryByDepartment_returnsCsvWithHeaderAndDataRows() throws Exception {
+        String csv = mockMvc.perform(get("/api/reports/summary/by-department/export"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith("text/csv"))
+                .andExpect(header().string("Content-Disposition", containsString("pay-by-department.csv")))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        assertThat(csv).startsWith("department,currency,headcount,avgSalary,medianSalary,totalCost");
+        assertThat(csv).contains("Engineering,USD,3,200000.00,200000.00,600000.00");
+        assertThat(csv).contains("Sales,GBP,2,50000.00,50000.00,100000.00");
+    }
+
+    @Test
+    void exportRaises_reflectsTheSameSinceFilterAsTheJsonEndpoint() throws Exception {
+        String emptyCsv = mockMvc.perform(get("/api/reports/raises/export").param("since", "2026-01-01"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Disposition", containsString("raises-since-2026-01-01.csv")))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        assertThat(emptyCsv.strip()).isEqualTo("employeeCode,firstName,lastName,department,newSalary,currency,effectiveDate,reason");
+
+        String raisePayload =
+                """
+                { "baseSalary": 210000.00, "currency": "USD", "effectiveDate": "2026-06-01", "reason": "RAISE" }
+                """;
+        mockMvc.perform(post("/api/employees/{id}/salary-history", engineeringUsdRaiseCandidateId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(raisePayload))
+                .andExpect(status().isCreated());
+
+        String csv = mockMvc.perform(get("/api/reports/raises/export").param("since", "2026-01-01"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        assertThat(csv).contains("Two,Engineering,210000.00,USD,2026-06-01,RAISE");
     }
 }

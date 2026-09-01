@@ -17,6 +17,7 @@ import { EmployeeService } from '../../../core/api/employee.service';
 import { Employee, EmployeeSearchParams } from '../../../core/models/employee.model';
 import { COUNTRIES, Country, DEPARTMENTS, JOB_GRADES, JobGrade } from '../../../core/models/reference-data';
 import { CurrencyByCodePipe } from '../../../shared/pipes/currency-by-code.pipe';
+import { downloadBlob } from '../../../shared/utils/download.util';
 
 @Component({
   selector: 'app-employee-list',
@@ -127,13 +128,4 @@ export class EmployeeListComponent implements OnInit {
       maxSalary: maxSalary ? Number(maxSalary) : undefined,
     };
   }
-}
-
-function downloadBlob(blob: Blob, filename: string): void {
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = filename;
-  anchor.click();
-  URL.revokeObjectURL(url);
 }

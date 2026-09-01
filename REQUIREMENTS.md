@@ -18,7 +18,7 @@ year?", "what's our total payroll cost?").
 
 | Feature | Description |
 |---|---|
-| Employee salary records | Create, view, edit, deactivate employee salary profiles: name, employee ID, department, country, currency, job grade/title, base salary, effective date. |
+| Employee salary records | Create, view, edit, deactivate/reactivate employee salary profiles: name, employee ID, department, country, currency, job grade/title, base salary, effective date. |
 | Salary history | Track changes to salary over time (raises, adjustments) with effective dates — needed to answer "how has pay changed," not just "what is it now." |
 | Bulk import | Import employee/salary data from CSV/Excel, so migrating off spreadsheets isn't a manual re-entry slog. |
 | Search & filter | Find employees by name, department, country, salary range, grade. |

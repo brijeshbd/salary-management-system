@@ -348,4 +348,46 @@ prompts and Claude Code's own delegation prompts to sub-agents - see
   (including the currency-charts) rendering correctly with zero console errors - the same
   screenshot-based verification bar used for every UI milestone since M8, now against the artifact
   a reviewer will actually open.
+- **Login/employee-list redesign + Incubyte brand alignment**: the user flagged the login screen's
+  layout as cramped ("Salary Management System" title, sign-in form, and labels all crowded
+  together) and separately asked for the post-login employee list to look "attractive... short and
+  sweet and simple and sobar" instead of the flat, borderless layout it started with. Redesigned
+  both around a shared card-based visual language (white cards, `border-radius`, soft shadow) with
+  a light background wash, verified via Playwright screenshots against the real running app before
+  and after. The user then asked for the whole app's color/typography to match `incubyte.co`
+  specifically - fetched the live site's actual CSS (not guessed) to pull its real palette (deep
+  teal `#014D43` primary, chartreuse accent) and font pairing (Fraunces headings, Inclusive Sans
+  body), then mapped that onto Angular Material's M3 theming API: the closest built-in palette by
+  hue (`cyan-palette`, whose tone 30 `#004f4f` is nearly identical to the brand teal) supplies
+  well-formed supporting tones, with a direct `primary`/`on-primary` override pinning the exact
+  brand hex for what's actually visible. The chart bar color was re-picked from the same hue family
+  and run through the project's `dataviz` skill validator rather than eyeballed - the two darkest
+  brand-teal tones both failed the chroma-floor check (read as gray), so the darkest *passing* tone
+  was used instead. Caught and fixed one real bug along the way: the same request's search field
+  had a label too long for its box, rendering as clipped/overlapping text - shortened the label and
+  widened the field. A separate follow-up request ("too much scrolling" on Reports) led to
+  discovering the Recent Raises table was silently rendering 5,000+ unpaginated rows in one long
+  page - split the dashboard into tabs and added client-side pagination to that table.
+- **Reactivate a deactivated employee (real gap, user-reported)**: the user asked "once we update
+  with Inactive it can not be active??" after noticing the detail page only ever showed a
+  Deactivate button, never a way back. Checked the backend directly rather than assuming: confirmed
+  there was genuinely no reactivate endpoint anywhere, backend or frontend - a one-way soft delete.
+  Added `POST /api/employees/{id}/reactivate`, a symmetric unit test next to the existing
+  `deactivate_setsEmployeeInactive` test, and a Reactivate button shown in place of Deactivate once
+  an employee is inactive. Verified end-to-end with Playwright against the real app: Active ->
+  Deactivate -> Inactive -> Reactivate -> Active, zero console errors.
+- **Report CSV export (closing a real requirements gap)**: the user asked "reports should be
+  downloaded right, based on their requirements?" - checked `REQUIREMENTS.md` directly rather than
+  assuming, and confirmed it explicitly promises "Export filtered views/reports to CSV," but only
+  the employee list had that button; all five Reports views had no download capability at all.
+  Added one export endpoint per report (headcount by country, pay distribution, by department, by
+  grade, recent raises), each honoring the same filter the screen is currently showing - e.g. the
+  raises export respects whatever "since" date is selected, not just today's default. Reused the
+  existing `CsvExportService` pattern (Apache Commons CSV, one method per shape) rather than
+  inventing a new one, and extracted the previously-duplicated `downloadBlob()` helper into a
+  shared frontend util now that a second feature needs it. Caught a real bug during manual
+  verification: the very first test run 500'd - not a code defect, but a stale backend process
+  left running on port 8080 from earlier testing, still serving old code. Killed it, restarted
+  clean, and re-verified all five exports end-to-end via Playwright (real file downloads, correct
+  filenames, correct CSV headers and data) before trusting the fix.
 - (Further milestones logged here as they land.)

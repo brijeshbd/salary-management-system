@@ -11,10 +11,10 @@ to show how the project was actually driven, not to dump every message.
 The project started deliberately open-ended, with the user asking Claude to drive clarification
 rather than assume scope:
 
-> I want to crearte one small project can you help me in that?
+> I want to create one small project, can you help me with that?
 
-> ok whatever we do need draft first then we will decide what to do.
-> please ask me questions if you have any doubt.
+> Whatever we build, we need a draft first, then we'll decide what to do.
+> Please ask me questions if you have any doubt.
 
 Scope only became concrete once the user supplied the actual assessment brief - first as a
 paraphrase, then as the real PDF:
@@ -22,7 +22,7 @@ paraphrase, then as the real PDF:
 > Goal: Build employee salary management software for an organization with 10,000 employees.
 > User Persona: HR Manager of the org
 
-> I have one document in download folder check that one once
+> I have one document in the Downloads folder, please check that one.
 
 Claude Code read the PDF directly (via its Read tool's PDF support) and identified the hard
 technical constraints (Java/Spring/Hibernate/Gradle/JUnit, Angular/TypeScript, a 10,000-employee
@@ -79,11 +79,11 @@ adapted by Claude Code into the final plan the user approved before any code was
 After the app was built and deployed, the user drove a direct audit against the job description
 rather than accepting the build as finished:
 
-> ok so as per JD did we miss something?
+> So, as per the JD, did we miss something?
 
-> so we didnt use multithreading??
+> So we didn't use multithreading?
 
-> can we make sure that our app should be mutlithreading friendly ??
+> Can we make sure our app is multithreading-friendly?
 
 This is what produced the CI/CD pipeline and the seeder's parallel-generation demonstration (see
 below) - both added *after* the app was otherwise complete, in direct response to gaps the user
@@ -120,10 +120,14 @@ corresponding entry for what the audit found and how it was applied.
 This document exists because of a direct instruction to check completeness against the brief's
 own artifacts list, rather than Claude Code asserting it was done:
 
-> have we followed Artifacts Along with your solution, please commit any artifacts that help us
-> understand your thinking and approach. Examples might include: - Requirements document -
-> Planning or design notes - Architecture diagrams - Prompts or instructions used with AI tools -
-> Trade-off explanations - Performance considerations
+> Have we followed the "Artifacts" requirement? Along with your solution, please commit any
+> artifacts that help us understand your thinking and approach. Examples might include:
+> - Requirements document
+> - Planning or design notes
+> - Architecture diagrams
+> - Prompts or instructions used with AI tools
+> - Trade-off explanations
+> - Performance considerations
 
 Claude Code checked each example against `git ls-files` directly rather than from memory, found
 five of six solidly covered and the sixth ("prompts or instructions") only partially covered by

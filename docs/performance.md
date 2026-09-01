@@ -101,3 +101,8 @@ extra locking; a max-plus-one query would have a race condition between two simu
   the initial bundle from 588KB to 376KB, back under the build's 500KB warning budget.
 - HikariCP connection pool defaults are left as-is — reasonable given the stated assumption of a
   small number of concurrent HR users, not a public-traffic API.
+- The Recent Raises report has no natural upper bound — a wide `since` date can match thousands of
+  rows, and the backend intentionally doesn't paginate that endpoint (a full CSV export needs the
+  complete set in one request anyway). The frontend slices the already-fetched array into pages
+  with a `computed()` signal and a `mat-paginator`, so the table only ever renders 10-50 rows into
+  the DOM at once regardless of how many rows the query actually returned.

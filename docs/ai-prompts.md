@@ -1,37 +1,37 @@
 # AI Prompts & Instructions
 
-Supplements [`ai-usage-log.md`](ai-usage-log.md) (a narrative of *what* was decided and *why*)
-with the actual prompt text at the points that shaped the project most — both the user's steering
-prompts to Claude Code, and Claude Code's own delegation prompts to sub-agents it dispatched for
-larger research/design/audit tasks. A curated, representative set, not a full transcript — chosen
-to show how the project was actually driven, not to dump every message.
+This supplements [`ai-usage-log.md`](ai-usage-log.md), which is a narrative of what was decided
+and why, with the actual prompt text at the points that shaped the project most - both the
+steering prompts given to Claude Code, and the delegation prompts Claude Code sent to its own
+sub-agents for larger research, design, and audit tasks. It's a curated, representative set, not
+a full transcript - chosen to show how the project was actually driven rather than to dump every
+message.
 
 ## Project kickoff & scoping
 
-The project started deliberately open-ended, with the user asking Claude to drive clarification
-rather than assume scope:
+The project started deliberately open-ended, with Claude asked to drive clarification instead of
+assuming scope:
 
 > I want to create one small project, can you help me with that?
 
 > Whatever we build, we need a draft first, then we'll decide what to do.
 > Please ask me questions if you have any doubt.
 
-Scope only became concrete once the user supplied the actual assessment brief - first as a
-paraphrase, then as the real PDF:
+Scope only became concrete once the actual assessment brief showed up - first as a paraphrase,
+then as the real PDF:
 
 > Goal: Build employee salary management software for an organization with 10,000 employees.
 > User Persona: HR Manager of the org
 
 > I have one document in the Downloads folder, please check that one.
 
-Claude Code read the PDF directly (via its Read tool's PDF support) and identified the hard
-technical constraints (Java/Spring/Hibernate/Gradle/JUnit, Angular/TypeScript, a 10,000-employee
-seed script, deployment, tests, incremental commits, this exact artifacts requirement) that
-weren't present in the earlier paraphrase, and folded them into `REQUIREMENTS.md` before any code
-was written.
+Claude Code read the PDF directly through its Read tool's PDF support and pulled out the hard
+technical constraints - Java/Spring/Hibernate/Gradle/JUnit, Angular/TypeScript, a 10,000-employee
+seed script, deployment, tests, incremental commits, and this exact artifacts requirement - none
+of which had come through in the earlier paraphrase. Those went straight into `REQUIREMENTS.md`
+before any code was written.
 
-The target job description - supplied by the user, used to lock the tech stack - was pasted in
-full:
+The target job description, used to lock the tech stack, was pasted in full:
 
 > RequirementsWhat You'll BringBackend – Java3+ years of Java development with strong
 > fundamentals. Experience with Micronaut or Spring frameworks. [...] Frontend –
@@ -40,14 +40,14 @@ full:
 > in Angular. [...] Experience with Microsoft Azure. Familiarity with observability and
 > monitoring best practices.
 
-(Full text in the conversation history; this JD is what later drove the JD-gap check that added
-CI/CD and the seeder's multithreading demonstration - see below.)
+(Full text is in the conversation history; this JD is what later drove the JD-gap check that
+added CI/CD and the seeder's multithreading demonstration - see below.)
 
 ## Delegating architecture design (Plan sub-agent)
 
-Rather than design the system alone, Claude Code entered plan mode and delegated the architecture
-design to a `Plan` sub-agent, with the full requirements/constraints as context and an explicit
-instruction to be opinionated rather than present unresolved options:
+Rather than design the system alone, Claude Code went into plan mode and handed the architecture
+design to a `Plan` sub-agent, giving it the full requirements and constraints as context along
+with an explicit instruction to be opinionated instead of presenting unresolved options:
 
 > We're building a take-home technical assessment project: "Employee Salary Management Software"
 > for HR Manager persona, ACME org, 10,000 employees across multiple countries. [...]
@@ -70,14 +70,14 @@ instruction to be opinionated rather than present unresolved options:
 > opinionated - pick one approach per decision point and justify it briefly, don't present
 > unresolved options.
 
-The resulting design became `/Users/brijesh/.claude/plans/cozy-gliding-cray.md`, reviewed and
-adapted by Claude Code into the final plan the user approved before any code was written - see
-`docs/tradeoffs.md` for the decisions that plan produced.
+The resulting design became `/Users/brijesh/.claude/plans/cozy-gliding-cray.md`, which Claude Code
+reviewed and adapted into the final plan before any code was written - see `docs/tradeoffs.md`
+for the decisions that plan produced.
 
 ## Mid-build steering (JD gap check)
 
-After the app was built and deployed, the user drove a direct audit against the job description
-rather than accepting the build as finished:
+After the app was built and deployed, the user pushed for a direct audit against the job
+description rather than accepting the build as finished:
 
 > So, as per the JD, did we miss something?
 
@@ -85,15 +85,15 @@ rather than accepting the build as finished:
 
 > Can we make sure our app is multithreading-friendly?
 
-This is what produced the CI/CD pipeline and the seeder's parallel-generation demonstration (see
-below) - both added *after* the app was otherwise complete, in direct response to gaps the user
+That's what produced the CI/CD pipeline and the seeder's parallel-generation demonstration (see
+below) - both added after the app was otherwise complete, in direct response to gaps the user
 asked Claude to check for.
 
 ## Delegating the thread-safety audit (Explore sub-agent)
 
 Before writing any concurrent code in response to "make sure the app is multithreading friendly,"
-Claude Code dispatched an `Explore` sub-agent to audit the existing codebase first, rather than
-assume it was safe or add locking defensively without evidence:
+Claude Code sent an `Explore` sub-agent to audit the existing codebase first, instead of assuming
+it was safe or bolting on defensive locking without evidence:
 
 > In the Spring Boot backend [...] audit every @Service, @Component, @RestController,
 > @Configuration, and filter/servlet class for thread-safety problems that would matter under
@@ -109,16 +109,16 @@ assume it was safe or add locking defensively without evidence:
 > field/line is the problem and why. [...] Don't fix anything - this is a read-only audit, just
 > report findings.
 
-The audit came back clean for every existing bean, but flagged exactly the risk anticipated in the
-prompt - `Faker` isn't safe for concurrent use - which shaped the fix (`DataSeeder` giving each
-parallel task its own generator instance) before it shipped, rather than discovering the race
-after the fact. See `docs/tradeoffs.md`'s "Concurrency" section and `docs/ai-usage-log.md`'s
-corresponding entry for what the audit found and how it was applied.
+The audit came back clean for every existing bean, but flagged exactly the risk it was asked to
+check for: `Faker` isn't safe for concurrent use, which shaped the fix - `DataSeeder` giving each
+parallel task its own generator instance - before it ever shipped, instead of a race being
+discovered after the fact. See the "Concurrency" section of `docs/tradeoffs.md` and the matching
+entry in `docs/ai-usage-log.md` for what the audit found and how it was applied.
 
 ## Verifying the artifacts requirement itself
 
 This document exists because of a direct instruction to check completeness against the brief's
-own artifacts list, rather than Claude Code asserting it was done:
+own artifacts list, rather than Claude asserting it was already done:
 
 > Have we followed the "Artifacts" requirement? Along with your solution, please commit any
 > artifacts that help us understand your thinking and approach. Examples might include:
@@ -129,7 +129,7 @@ own artifacts list, rather than Claude Code asserting it was done:
 > - Trade-off explanations
 > - Performance considerations
 
-Claude Code checked each example against `git ls-files` directly rather than from memory, found
-five of six solidly covered and the sixth ("prompts or instructions") only partially covered by
-the narrative `ai-usage-log.md`, said so rather than arguing the narrative log was sufficient, and
-wrote this document in response.
+Claude Code checked each item against `git ls-files` directly instead of relying on memory, found
+five of six solidly covered and the sixth - prompts or instructions - only partially covered by
+the narrative `ai-usage-log.md`. Rather than argue the narrative log was good enough on its own,
+it said so plainly and wrote this document in response.
